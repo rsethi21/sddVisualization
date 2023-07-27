@@ -7,7 +7,7 @@ from itertools import compress
 
 parser = argparse.ArgumentParser(description='custom parser for sdd file')
 parser.add_argument('-i', '--input', help='input path to sdd file', required=True)
-parser.add_argument('-s', '--save', help='path to save csv', required=False, default='./output.csv')
+parser.add_argument('-s', '--save', help='path to save csv', required=False, default=None)
 parser.add_argument('-p', '--parse', help='whether to parse out values needed for visualization tool', default=True, action=argparse.BooleanOptionalAction)
 
 class SDDReport:
@@ -100,14 +100,37 @@ class SDDReport:
 
         return self.originalDF[colName]
 
-    def saveParsed(self, path, df1, *dfs):
+    def parseVizInfo(self):
+
+        dimensions = []
+        for row in self.extractCol("xyz"):
+            temp = []
+            for l in SDDReport.splitBoth(row, type(0.0)):
+                temp += l
+            dimensions.append(temp)
+        dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders)
+
+        chromosomeInfo = []
+        for row2 in self.extractCol("chromosomeid"):
+            chromosomeInfo.append(SDDReport.splitCommas(row2, type(0)))
+        chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders)
+
+        damageInfo = []
+        for row3 in self.extractCol("damage"):
+            damageInfo.append(SDDReport.splitCommas(row3, type(0)))
+        damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders)
+
+        return dimensions, chromosomeInfo, damageInfo
+
+    def saveParsed(self, df1, *dfs, path = None):
 
         finaldf = df1
         for df in dfs:
             finaldf = finaldf.join(df)
         
         self.parsedDf = finaldf
-        finaldf.to_csv(path)
+        if path != None:
+            finaldf.to_csv(path)
 
         return finaldf
 
@@ -120,23 +143,6 @@ if __name__ == '__main__':
         sdd.to_csv(args.save)
 
     else:
-        dimensions = []
-        for row in sdd.extractCol("xyz"):
-            temp = []
-            for l in SDDReport.splitBoth(row, type(0.0)):
-                temp += l
-            dimensions.append(temp)
-        dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders)
-
-        chromosomeInfo = []
-        for row2 in sdd.extractCol("chromosomeid"):
-            chromosomeInfo.append(SDDReport.splitCommas(row2, type(0)))
-        chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders)
-
-        damageInfo = []
-        for row3 in sdd.extractCol("damage"):
-            damageInfo.append(SDDReport.splitCommas(row3, type(0)))
-        damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders)
-
-        parsedSdd = sdd.saveParsed(args.save, dimensions, chromosomeInfo, damageInfo)
+        dimensions, chromosomeInfo, damageInfo = sdd.parseVizInfo()
+        parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, path = args.save)
         print(parsedSdd)

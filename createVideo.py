@@ -1,4 +1,3 @@
-
 # imports
 import os
 import cv2
@@ -11,16 +10,14 @@ parser.add_argument('-o', '--output', help='path to output movie file (avi)', re
 parser.add_argument('-s', '--sort', help='sort images (images must have number before extension (i.e. name_#.extension)', default=False, action=argparse.BooleanOptionalAction)
 parser.add_argument('-f', '--fps', help='adjust frames per second for video', required=False, default=30)
 
-if __name__ == "__main__":
-    
-    args = parser.parse_args()
-    
+def prepareImages(path, sort = False):
+
     # set-up paths for images
-    image_path = args.path
+    image_path = path
     images = [os.path.join(image_path, i) for i in list(os.listdir(image_path))]
     
     # sort images in right order
-    if args.sort:
+    if sort:
         try:
             dictionary = {int(image[image.rindex("_")+1:image.rindex(".")]): image for image in images}
             indices = sorted(dictionary)
@@ -28,16 +25,29 @@ if __name__ == "__main__":
         except ValueError:
             print("Utilized the incorrect image file name formating! Must follow the following syntax:\n[filename]_[#].[extension]")
 
+    return images
+
+def video(images, fps, outputpath):
+
     # create video
-    name = args.output
+    name = outputpath
     
     initial_frame = cv2.imread(images[0])
     height, width, layers = initial_frame.shape
     
-    video = cv2.VideoWriter(name, 0, int(args.fps), (width, height))
+    video = cv2.VideoWriter(name, 0, fps, (width, height))
     
     for image in tqdm(images):
         video.write(cv2.imread(image))
         
     cv2.destroyAllWindows()
     video.release()
+
+
+if __name__ == "__main__":
+    
+    args = parser.parse_args()
+    
+    images = prepareImages(args.path, sort = args.sort)
+
+    video(images, int(args.fps), args.output)
