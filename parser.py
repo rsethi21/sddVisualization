@@ -1,13 +1,14 @@
 import argparse
 import pandas as pd
+import numpy as np
 import csv
 import os
 from itertools import compress
 
 parser = argparse.ArgumentParser(description='custom parser for sdd file')
 parser.add_argument('-i', '--input', help='input path to sdd file', required=True)
-parser.add_argument('-s', '--save', help='path to save parsed csv', required=False, default=None)
-parser.add_argument('-c', '--columns', nargs='*', help='multiple columns headers must match that of', required=False, default=None)
+parser.add_argument('-s', '--save', help='path to save csv', required=False, default='./output.csv')
+parser.add_argument('-p', '--parse', help='whether to parse out values needed for visualization tool', default=True, action=argparse.BooleanOptionalAction)
 
 class SDDReport:
 
@@ -15,11 +16,13 @@ class SDDReport:
                               "cause", "damage", "breakspec", "sequence", \
                                 "lesiontime", "particletype", "particleenergy", \
                                     "particletranslation", "particledirection", "particletime"]
-    parsedColumnHeaders = []
+    dimensionsHeaders = ["xcenter", "ycenter", "zcenter", "xmax", "ymax", "zmax", "xmin", "ymin", "zmin"]
+    chromosomeInfoHeaders = ["structure", "chromsomeNumber", "chromatidNumber", "arm"]
+    damageInfoHeaders = ["numBases", "singleNumber", "dsbPresent"]
 
-    def __init__(self, sddPath, column_headers):
+    def __init__(self, sddPath):
         
-        self.originalDF = SDDReport.openNStore(sddPath, column_headers)
+        self.originalDF = SDDReport.openNStore(sddPath)
 
     @classmethod
     def splitSlashes(cls, val, typ):
@@ -60,7 +63,16 @@ class SDDReport:
         return values
 
     @classmethod
-    def openNStore(cls, path, columns):
+    def splitBoth(cls, val, typ):
+        
+        lst = SDDReport.splitSlashes(val, type(""))
+        vals = []
+        for v in lst:
+            vals.append(SDDReport.splitCommas(v, typ))
+        return vals
+
+    @classmethod
+    def openNStore(cls, path):
         
         skiprow = 0
         columnrow = list()
@@ -78,21 +90,53 @@ class SDDReport:
         with open(path, "r") as file2:
             df = pd.read_csv(file2, sep=";", header = None, skiprows = skiprow)
             df.dropna(axis=1, how="all", inplace=True)
-            try:
-                df.columns = columns
-            except:
-                print("Column headers not provided or of incorrect size. Defaulting to standard column names based on file...")
-                print()    
-                columns = list(compress(cls.originalColumnHeaders, columnrow))
-                df.columns = columns
 
+            columns = list(compress(cls.originalColumnHeaders, columnrow))
+            df.columns = columns
+        
         return df
     
-    def separateVals(self):
-        return
+    def extractCol(self, colName):
+
+        return self.originalDF[colName]
+
+    def saveParsed(self, path, df1, *dfs):
+
+        finaldf = df1
+        for df in dfs:
+            finaldf = finaldf.join(df)
+        
+        self.parsedDf = finaldf
+        finaldf.to_csv(path)
+
+        return finaldf
 
 if __name__ == '__main__':
     
     args = parser.parse_args()
-    sdd = SDDReport(args.input, args.columns)
-    print(sdd.originalDF)
+    sdd = SDDReport(args.input)
+    
+    if not args.parse:
+        sdd.to_csv(args.save)
+
+    else:
+        dimensions = []
+        for row in sdd.extractCol("xyz"):
+            temp = []
+            for l in SDDReport.splitBoth(row, type(0.0)):
+                temp += l
+            dimensions.append(temp)
+        dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders)
+
+        chromosomeInfo = []
+        for row2 in sdd.extractCol("chromosomeid"):
+            chromosomeInfo.append(SDDReport.splitCommas(row2, type(0)))
+        chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders)
+
+        damageInfo = []
+        for row3 in sdd.extractCol("damage"):
+            damageInfo.append(SDDReport.splitCommas(row3, type(0)))
+        damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders)
+
+        parsedSdd = sdd.saveParsed(args.save, dimensions, chromosomeInfo, damageInfo)
+        print(parsedSdd)
