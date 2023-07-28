@@ -1,14 +1,8 @@
-import argparse
 import pandas as pd
 import numpy as np
 import csv
 import os
 from itertools import compress
-
-parser = argparse.ArgumentParser(description='custom parser for sdd file')
-parser.add_argument('-i', '--input', help='input path to sdd file', required=True)
-parser.add_argument('-s', '--save', help='path to save csv', required=False, default=None)
-parser.add_argument('-p', '--parse', help='whether to parse out values needed for visualization tool', default=True, action=argparse.BooleanOptionalAction)
 
 class SDDReport:
 
@@ -19,6 +13,7 @@ class SDDReport:
     dimensionsHeaders = ["xcenter", "ycenter", "zcenter", "xmax", "ymax", "zmax", "xmin", "ymin", "zmin"]
     chromosomeInfoHeaders = ["structure", "chromsomeNumber", "chromatidNumber", "arm"]
     damageInfoHeaders = ["numBases", "singleNumber", "dsbPresent"]
+    causeHeaders = ["identifier", "direct", "indirect"]
 
     def __init__(self, sddPath):
         
@@ -102,25 +97,46 @@ class SDDReport:
 
     def parseVizInfo(self):
 
-        dimensions = []
-        for row in self.extractCol("xyz"):
-            temp = []
-            for l in SDDReport.splitBoth(row, type(0.0)):
-                temp += l
-            dimensions.append(temp)
-        dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders)
+        try:
+            dimensions = []
+            for row in self.extractCol("xyz"):
+                temp = []
+                for l in SDDReport.splitBoth(row, type(0.0)):
+                    temp += l
+                dimensions.append(temp)
+            length = len(dimensions[0])
+            dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders[0:length])
+        except ValueError:
+            print("Either no positional information or missing extent of damage.")
 
-        chromosomeInfo = []
-        for row2 in self.extractCol("chromosomeid"):
-            chromosomeInfo.append(SDDReport.splitCommas(row2, type(0)))
-        chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders)
+        try:
+            chromosomeInfo = []
+            for row2 in self.extractCol("chromosomeid"):
+                chromosomeInfo.append(SDDReport.splitCommas(row2, type(0)))
+            chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders)
+        except:
+            print("There is no damage information column in this file. Skipping...")
+            chromosomeInfo = None
 
-        damageInfo = []
-        for row3 in self.extractCol("damage"):
-            damageInfo.append(SDDReport.splitCommas(row3, type(0)))
-        damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders)
+        try:
+            damageInfo = []
+            for row3 in self.extractCol("damage"):
+                damageInfo.append(SDDReport.splitCommas(row3, type(0)))
+            damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders)
+        except:
+            print("There is no damage information column in this file. Skipping...")
+            damage = None
 
-        return dimensions, chromosomeInfo, damageInfo
+        try:
+            cause = []
+            for row4 in self.extractCol("cause"):
+                cause.append(SDDReport.splitCommas(row4, type(0)))
+            cause = pd.DataFrame(np.array(cause), columns=SDDReport.causeHeaders)
+        except:
+            print("There is no cause information column in this file. Skipping...")
+            cause = None
+
+        return dimensions, chromosomeInfo, damageInfo, cause
 
     def saveParsed(self, df1, *dfs, path = None):
 
@@ -133,16 +149,3 @@ class SDDReport:
             finaldf.to_csv(path)
 
         return finaldf
-
-if __name__ == '__main__':
-    
-    args = parser.parse_args()
-    sdd = SDDReport(args.input)
-    
-    if not args.parse:
-        sdd.to_csv(args.save)
-
-    else:
-        dimensions, chromosomeInfo, damageInfo = sdd.parseVizInfo()
-        parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, path = args.save)
-        print(parsedSdd)

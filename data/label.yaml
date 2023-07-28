@@ -1,0 +1,5 @@
+---
+structure: True # Form of DNA
+chromsomeNumber: False # Chromosome Number in Nucleus
+identifier: False # Reason for Damage 
+dsbPresent: True # DSB or Single/Base Damage
