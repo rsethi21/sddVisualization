@@ -14,7 +14,7 @@ class SDDReport:
     chromosomeInfoHeaders = ["structure", "chromsomeNumber", "chromatidNumber", "arm"]
     damageInfoHeaders = ["numBases", "singleNumber", "dsbPresent"]
     causeHeaders = ["identifier", "direct", "indirect"]
-
+    
     def __init__(self, sddPath):
         
         self.originalDF = SDDReport.openNStore(sddPath)

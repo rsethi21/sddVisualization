@@ -1,5 +1,24 @@
 ---
-structure: True # Form of DNA
-chromsomeNumber: False # Chromosome Number in Nucleus
-identifier: False # Reason for Damage 
-dsbPresent: True # DSB or Single/Base Damage
+structure: # Form of DNA
+  include: True
+  labels:
+    0: unspecified
+    1: heterochromatin
+    2: euchromatin
+    3: free fragment
+    4: mitochondrial
+chromsomeNumber: # Chromosome Number in Nucleus
+  include: True
+  labels:
+identifier: # Reason for Damage 
+  include: False
+  labels:
+    0: physical
+    1: chemical
+    2: chemical and physical
+    3: charge migration
+dsbPresent: # DSB or Single/Base Damage
+  include: False
+  labels:
+    0: SSB and/or Base
+    1: DSBs
