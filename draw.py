@@ -162,7 +162,7 @@ if __name__ == '__main__':
   args = parseIt.parse_args()
 
   df = openSSD(args.input)
-  # scalePositionalData(df, int(args.width), int(args.length))
+  scalePositionalData(df, int(args.width), int(args.length))
   newdf = filter(df, args.filter)
   pb, newdf = label(newdf, args.coordinate)
   graph(newdf, pb, args.save)
