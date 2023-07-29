@@ -10,6 +10,7 @@ import numpy as np
 from parser import SDDReport
 from normalize import trainScaling, ScalePos
 from readYaml import readYaml
+import random
 
 parseIt = argparse.ArgumentParser()
 parseIt.add_argument('-i', '--input', help='path to ssd file', required=True)
@@ -18,6 +19,7 @@ parseIt.add_argument('-l', '--length', help='length of output image', required=F
 parseIt.add_argument('-f', '--filter', help='yaml file with filter configurations', required=False, default=None)
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None)
 parseIt.add_argument('-s', '--save', help='output folder path', required=True)
+parseIt.add_argument('--points', help='plot as points', default=False, action=argparse.BooleanOptionalAction)
 
 def openSSD(pathSSD, outpath = None):
 
@@ -124,20 +126,28 @@ def label(df, labelFilePath):
 
   return plotBy, df
 
-def graph(df, labelCoordinateList, outputDir):
+def graph(df, labelCoordinateList, outputDir, points):
   colorlist = list(mcolors.CSS4_COLORS)
-  if 'xmax' not in list(df.columns):
+  random.shuffle(colorlist)
+  if 'xmax' not in list(df.columns) or points:
     for key in labelCoordinateList:
       fig = plt.figure()
       ax = fig.add_subplot(111, projection="3d")
       uniqueVals = list(df[key].unique())
       left = uniqueVals.copy()
-      for x, y, z, l in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key])):
+      for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)):
         if l in left:
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=10, label = l)
-          left.remove(l)
+          if "direct" in df.columns and "indirect" in df.columns:
+            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]), label = l)
+            left.remove(l)
+          else:
+            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2, label = l)
+            left.remove(l)
         else:
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=10)
+          if "direct" in df.columns and "indirect" in df.columns:
+            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]))
+          else:
+            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2)
       plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small")
       fig.savefig(os.path.join(outputDir, f"dsb_{key}.png"))
       plt.close(fig)
@@ -165,4 +175,4 @@ if __name__ == '__main__':
   scalePositionalData(df, int(args.width), int(args.length))
   newdf = filter(df, args.filter)
   pb, newdf = label(newdf, args.coordinate)
-  graph(newdf, pb, args.save)
+  graph(newdf, pb, args.save, points=args.points)
