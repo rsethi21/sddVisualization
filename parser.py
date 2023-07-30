@@ -5,7 +5,13 @@ import os
 from itertools import compress
 
 class SDDReport:
-
+    '''
+    inputs: path to sdd file
+    
+    The goal of this object is to provide a set of custom tools to parse an sdd file.
+    This also provides a default parser to generate an image of damage across the nucleus.
+    The reason for making this an object is to be able to store the old sdd, parsed sdd, and organize functions.
+    '''
     originalColumnHeaders = ["class", "xyz", "chromosomeid", "chromosomepos", \
                               "cause", "damage", "breakspec", "sequence", \
                                 "lesiontime", "particletype", "particleenergy", \
@@ -15,13 +21,18 @@ class SDDReport:
     damageInfoHeaders = ["numBases", "singleNumber", "dsbPresent"]
     causeHeaders = ["identifier", "direct", "indirect"]
     
-    def __init__(self, sddPath):
+    def __init__(self, sddPath: str):
         
         self.originalDF = SDDReport.openNStore(sddPath)
 
     @classmethod
-    def splitSlashes(cls, val, typ):
-
+    def splitSlashes(cls, val: str, typ: any):
+        '''
+        inputs: requires a string that has slashes as a delimiter, and final type of the split values
+        outputs: return a list of values after delimitation
+        
+        The goal of this function is to split the string and convert to desired output.  Class method since no need for instance specific changes.
+        '''
         sep = " / "
         values = list(val.split(sep))
         if type(values[0]) != typ:
@@ -39,8 +50,13 @@ class SDDReport:
         return values
     
     @classmethod
-    def splitCommas(cls, val, typ):
+    def splitCommas(cls, val: str, typ: any):
+        '''
+        inputs: requires a string that has commas as a delimiter, and final type of the split values
+        outputs: return a list of values after delimitation
         
+        The goal of this function is to split the string and convert to desired output. Class method since no need for instance specific changes.
+        '''
         sep = ", "
         values = list(val.split(sep))
         if type(values[0]) != typ:
@@ -58,8 +74,13 @@ class SDDReport:
         return values
 
     @classmethod
-    def splitBoth(cls, val, typ):
+    def splitBoth(cls, val: str, typ: any):
+        '''
+        inputs: requires a string that has slashes and then commas as a delimiter, and final type of the split values
+        outputs: return a list of values after delimitation
         
+        The goal of this function is split values that are delimited by slashes then commas which is common in an sdd file.
+        '''
         lst = SDDReport.splitSlashes(val, type(""))
         vals = []
         for v in lst:
