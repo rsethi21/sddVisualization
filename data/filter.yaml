@@ -1,5 +1,11 @@
 ---
+# outer key is the name of the column of interest in the parsed SDD
+# integers are the unique values of the columns of interest
+
 # structure of DNA at the site of damage
+# the integers represent the unique values of the column
+# the name field is for the user to know what the integers mean
+# the include field is whether to graph data with those values in the column
 structure:
   0:
     name: unspecified
@@ -18,9 +24,13 @@ structure:
     include: True
 
 # chromosome number
+# the list of integers is the integer chromosome numbers to include in the visualization
 chromsomeNumber: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
 
 # type of damage
+# the integers represent the unique values of the column
+# the name field is for the user to know what the integers mean
+# the include field is whether to graph data with those values in the column
 identifier:
   0:
     name: physical
@@ -36,30 +46,45 @@ identifier:
     include: True
 
 # number of direct damages
+# less is keep any values less than the user specified integer (by default keeps all)
+# greater is keep any values greater than the user specified integer (by default keeps all)
+# equal is keep any values equal to the user specified integer (by default keeps all)
 direct:
   less:
   greater:
   equal:
 
 # number of indirect damages
+# less is keep any values less than the user specified integer (by default keeps all)
+# greater is keep any values greater than the user specified integer (by default keeps all)
+# equal is keep any values equal to the user specified integer (by default keeps all)
 indirect:
   less:
   greater:
   equal:
 
 # number of bases damaged
+# less is keep any values less than the user specified integer (by default keeps all)
+# greater is keep any values greater than the user specified integer (by default keeps all)
+# equal is keep any values equal to the user specified integer (by default keeps all)
 numBases:
   less:
   greater:
   equal:
 
 # number of single backbone breaks
+# less is keep any values less than the user specified integer (by default keeps all)
+# greater is keep any values greater than the user specified integer (by default keeps all)
+# equal is keep any values equal to the user specified integer (by default keeps all)
 singleNumber:
   less:
   greater:
   equal:
 
-# extent of damage 
+# extent of damage
+# the integers represent the unique values of the column
+# the name field is for the user to know what the integers mean
+# the include field is whether to graph data with those values in the column
 dsbPresent:
   0:
     name: single backbone and base only

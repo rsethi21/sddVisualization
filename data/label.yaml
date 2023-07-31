@@ -1,4 +1,9 @@
 ---
+# outer key is the name of the column of interest in the parsed SDD
+# integers are the unique values of the columns of interest
+
+# the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
+# include is whether to label data by the specific field
 structure: # Form of DNA
   include: True
   labels:
@@ -7,9 +12,15 @@ structure: # Form of DNA
     2: euchromatin
     3: free fragment
     4: mitochondrial
+
+# the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
+# include is whether to label data by the specific field
 chromsomeNumber: # Chromosome Number in Nucleus
   include: True
   labels:
+
+# the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
+# include is whether to label data by the specific field
 identifier: # Reason for Damage 
   include: False
   labels:
@@ -17,6 +28,9 @@ identifier: # Reason for Damage
     1: chemical
     2: chemical and physical
     3: charge migration
+
+# the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
+# include is whether to label data by the specific field
 dsbPresent: # DSB or Single/Base Damage
   include: False
   labels:
