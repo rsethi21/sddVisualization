@@ -193,9 +193,11 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, points: b
     fig = plt.figure() # create new figure
     ax = fig.add_subplot(111, projection="3d") # add 3D component
     if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-      ax.plot3D(x, y, z, marker=".", markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
+      for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
+        ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
     else: # if no direct/indirect
-      ax.plot3D(x, y, z, marker=".", markersize=2) # same size for all points
+      for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
+        ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
     fig.savefig(os.path.join(outputDir, f"dsb.png")) # save basic image
     plt.close(fig) # close to avoid overlaps
 
@@ -217,8 +219,8 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, points: b
   
     fig = plt.figure() # create new figure object
     ax = fig.add_subplot(111, projection="3d") # create 3D plot
-    for x1, y1, z1, x2, y2, z2, l in tqdm(zip(df['xmin'], df['ymin'], df['zmin'], df['xmax'], df['ymax'], df['zmax'], df[key])): # iterate extent of damage
-      ax.plot3D([x1, x2], [y1, y2], [z1, z2], linestyle='-', linewidth = 2) # plot points without labels
+    for x1, y1, z1, x2, y2, z2 in tqdm(zip(df['xmin'], df['ymin'], df['zmin'], df['xmax'], df['ymax'], df['zmax'])): # iterate extent of damage
+      ax.plot3D([x1, x2], [y1, y2], [z1, z2], linestyle='-', linewidth = 2, color='k') # plot points without labels
     fig.savefig(os.path.join(outputDir, f"dsb.png")) # save unlabelled plot
     plt.close(fig) # close to avoid overlap
   
@@ -233,6 +235,6 @@ if __name__ == '__main__': # if script run directly
   if args.filter != None: # ensuring this is inputed, else basic plot
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
   pb = [] # instantiating empty variable incase labels not applied
-  if args.label != None: # ensuring this is inputed, else basic plot
+  if args.coordinate != None: # ensuring this is inputed, else basic plot
     pb, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
   graph(newdf, pb, args.save, args.points) # create and save plots
