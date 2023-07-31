@@ -66,7 +66,7 @@ pip3 install -r requirements.txt
 
 ### Example for draw.py
 
-```python3 draw.py -i ./data/Nucl -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --points```
+```python3 draw.py -i ./data/NucleusDNADamage-0.5_sdd.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --points```
 
 ## What are filter/label.yaml files?
 
