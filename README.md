@@ -18,7 +18,7 @@
 ### Virtual Environment
 
 ```
-pip3 install python3-venv
+python3 -m pip3 install --user virtualenv
 python3 -m venv [name of environment]
 source [name of environment]/bin/activate # only in linux
 pip3 install -r requirements.txt
