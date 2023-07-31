@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-def trainScaling(scale: int, *arr: pd.Series):
+def trainScaling(width: int, length: int, *arr: pd.Series):
     '''
     inputs: scale of frame, any number of pandas series objects
     outputs: scaler to fit the data with
@@ -12,6 +12,7 @@ def trainScaling(scale: int, *arr: pd.Series):
     By default uses the MinMaxScaler. The scale is used to determine what values to scale the arrays to (i.e. 10 scales data to -10, 10).
     '''
     arrs = pd.DataFrame(pd.concat(arr, axis=0)) # combine all arrays under the same series obj
+    scale = min(width, length)
     scaler = MinMaxScaler(feature_range = (-1*scale, scale)) # design scaler to fit values into the desired scale
     scaler.fit(arrs) # fit scaler to data
     return scaler
