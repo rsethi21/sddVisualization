@@ -146,9 +146,11 @@ def label(df: pd.DataFrame, labelFilePath: str):
       print(f"Cannot label by values in column {col} because it is not in the provided sdd.") # if not in the dataframe then skip
 
   plotBy = [] # instantiate a list to store which columns to color coordinate by
+  outfiles = {}
   for key in list(newDict.keys()): # iterate through each key in the color coordination dictionary
-    if newDict[key]['include']: # check if user wants to coordinate by this key
+    if newDict[key]['labelby']: # check if user wants to coordinate by this key
       plotBy.append(key) # add the key to the list
+      outfiles[key] = newDict[key]['outfile']
       for i in df.index: # iterate through each row in the dataframe
         # try except in case user does not include labels
         try:
@@ -156,9 +158,9 @@ def label(df: pd.DataFrame, labelFilePath: str):
         except:
           pass
 
-  return plotBy, df
+  return plotBy, outfiles, df
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, points: bool):
+def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, points: bool):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -187,7 +189,10 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, points: b
           else: # if no direct, indirect
             ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
       plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
-      fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure based on labelled column
+      try:
+        fig.savefig(os.path.join(outputDir, outfiles[key])) # save figure based on labelled column
+      except:
+        fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure based on labelled column
       plt.close(fig) # close to avoid overlaps
     
     fig = plt.figure() # create new figure
@@ -235,6 +240,7 @@ if __name__ == '__main__': # if script run directly
   if args.filter != None: # ensuring this is inputed, else basic plot
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
   pb = [] # instantiating empty variable incase labels not applied
+  outfiles = {}
   if args.coordinate != None: # ensuring this is inputed, else basic plot
-    pb, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
-  graph(newdf, pb, args.save, args.points) # create and save plots
+    pb, outfiles, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
+  graph(newdf, pb, outfiles, args.save, args.points) # create and save plots

@@ -3,36 +3,40 @@
 # integers are the unique values of the columns of interest
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
-# include is whether to label data by the specific field
+# labelby is whether to label data by the specific field
 structure: # Form of DNA
-  include: True
+  labelby: False
   labels:
     0: unspecified
     1: heterochromatin
     2: euchromatin
     3: free fragment
     4: mitochondrial
+  outfile: dsb_structure.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 chromsomeNumber: # Chromosome Number in Nucleus
-  include: True
+  labelby: True
   labels:
+  outfile: dsb_chromosomeNumber_all.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 identifier: # Reason for Damage 
-  include: False
+  labelby: False
   labels:
     0: physical
     1: chemical
     2: chemical and physical
     3: charge migration
+  outfile: dsb_identifier.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 dsbPresent: # DSB or Single/Base Damage
-  include: False
+  labelby: False
   labels:
     0: SSB and/or Base
     1: DSBs
+  outfile: dsb_dsbpresent.png
