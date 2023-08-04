@@ -15,7 +15,11 @@
 
 ## What is needed to run this tool?
 ### Install Python
-Go to python and install proper sdk for your machine
+Go to python on google and install proper sdk for your machine
+### Install Git
+Go to git on google and install proper sdk for your machine
+### Clone this repository
+```git clone 
 ### Install PIP
 ```
 python3 -m pip3 install --upgrade pip
