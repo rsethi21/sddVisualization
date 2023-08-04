@@ -90,6 +90,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 
 ### Example for draw.py
 
+Make sure you are in the sddVisualization folder in order to run the script
 ```python3 draw.py -i ./data/NucleusDNADamage-0.5_sdd.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --points```
 
 ## What are filter/label.yaml files?
