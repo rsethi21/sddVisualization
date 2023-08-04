@@ -15,21 +15,22 @@
 
 ## What is needed to run this tool?
 
-### Install Python - only do this once
+### Install Python (only do this once)
 Go to python on google and install proper sdk for your machine
 
-### Install Git - only do this once
+### Install Git (only do this once)
 Go to git on google and install proper sdk for your machine
 
-### Clone this repository - only do this once
-```
-git clone https://github.com/rsethi21/sddVisualization.git
-```
-### Install PIP - only do this once
+### Install PIP (only do this once)
 ```
 python3 -m pip3 install --upgrade pip
 ```
-### Virtual Environment - only do this once
+### Clone this repository (only do this once)
+```
+git clone https://github.com/rsethi21/sddVisualization.git
+```
+move into this sddVisualization folder after installation complete
+### Virtual Environment (only do this once)
 
 create venv:
 ```
