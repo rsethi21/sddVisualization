@@ -19,7 +19,9 @@ Go to python on google and install proper sdk for your machine
 ### Install Git
 Go to git on google and install proper sdk for your machine
 ### Clone this repository
-```git clone 
+```
+git clone https://github.com/rsethi21/sddVisualization.git
+```
 ### Install PIP
 ```
 python3 -m pip3 install --upgrade pip
