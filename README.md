@@ -14,19 +14,22 @@
 - The tool provides the flexibility, customization, and standardization allowing for ease of visualization
 
 ## What is needed to run this tool?
-### Install Python
+
+### Install Python - only do this once
 Go to python on google and install proper sdk for your machine
-### Install Git
+
+### Install Git - only do this once
 Go to git on google and install proper sdk for your machine
-### Clone this repository
+
+### Clone this repository - only do this once
 ```
 git clone https://github.com/rsethi21/sddVisualization.git
 ```
-### Install PIP
+### Install PIP - only do this once
 ```
 python3 -m pip3 install --upgrade pip
 ```
-### Virtual Environment
+### Virtual Environment - only do this once
 
 create venv:
 ```
@@ -42,6 +45,7 @@ install packages:
 ```
 pip3 install -r requirements.txt
 ```
+Once installed, all you have to do is reactivate the environment after re-entering the command prompt/shell instance using the active venv command
 
 ### Scripts
 
