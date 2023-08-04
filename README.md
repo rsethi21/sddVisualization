@@ -22,14 +22,18 @@ python3 -m pip3 install --upgrade pip
 ```
 ### Virtual Environment
 
+create venv:
 ```
 python3 -m pip3 install --user virtualenv
 python3 -m venv [name of environment]
 ```
 activate venv:
 ```
-    source [name of environment]/bin/activate # only in linux
-    [name of environment]\Scripts\activate.bat # only in windows
+source [name of environment]/bin/activate # only in linux
+[name of environment]\Scripts\activate.bat # only in windows
+```
+install packages:
+```
 pip3 install -r requirements.txt
 ```
 
