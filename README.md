@@ -60,7 +60,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 ### Inputs for draw.py
 
 ```python3 draw.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [--points | --no-points]```
-
+```
 - options:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
@@ -76,7 +76,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
   -s SAVE, --save SAVE  output folder path
   --points, --no-points
                         plot as points rather than lines of the DNA extent
-
+```
 ### Outputs for draw.py
 
 - points
