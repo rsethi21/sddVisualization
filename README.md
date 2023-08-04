@@ -14,13 +14,22 @@
 - The tool provides the flexibility, customization, and standardization allowing for ease of visualization
 
 ## What is needed to run this tool?
-
+### Install Python
+Go to python and install proper sdk for your machine
+### Install PIP
+```
+python3 -m pip3 install --upgrade pip
+```
 ### Virtual Environment
 
 ```
 python3 -m pip3 install --user virtualenv
 python3 -m venv [name of environment]
-source [name of environment]/bin/activate # only in linux
+```
+activate venv:
+```
+    source [name of environment]/bin/activate # only in linux
+    [name of environment]\Scripts\activate.bat # only in windows
 pip3 install -r requirements.txt
 ```
 
