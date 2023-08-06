@@ -108,6 +108,10 @@ class SDDReport:
             if "Data entries" in line: # looking for binary data list to determine which columns present
                 columnrow = line[line.index("Data entries")+len("Data entries")+2:-2].split(", ") # finding string list with binary info. and spliting into list of ints
                 columnrow = [True if item == "1" else False for item in columnrow] # converting 1, 0s to booleans
+            if "Volumes" in line:
+                try:
+                    int(line[line.index("Volumes, ")+len("Volumes, ")+14])
+                columnrow = line[line.index("Volumes, ")+len("Volumes, ")+2:-2].split(", ")
 
         with open(path, "r") as file2: # opening file again to read sdd
             df = pd.read_csv(file2, sep=";", header = None, skiprows = skiprow) # opening sdd as a DF with appropriate skipping
