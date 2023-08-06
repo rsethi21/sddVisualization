@@ -51,7 +51,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 ### Scripts
 
 - Helper Scripts:
-    -  parser.py: opens the SDD file and creates an SDD object with the original SDD file and customized parsed SDD dataframes
+    - parser.py: opens the SDD file and creates an SDD object with the original SDD file and customized parsed SDD dataframes
     - normalize.py: takes columns of similar data and normalizes the data to the scale desired by a user
     - readYaml.py: opens yaml configuration files
 - User Script:
@@ -59,7 +59,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 
 ### Inputs for draw.py
 
-```python3 draw.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [--points | --no-points]```
+```python3 draw.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE]```
 ```
 - options:
   -h, --help            show this help message and exit
@@ -74,8 +74,6 @@ Once installed, all you have to do is reactivate the environment after re-enteri
   -c COORDINATE, --coordinate COORDINATE
                         yaml file with labelling configurations
   -s SAVE, --save SAVE  output folder path
-  --points, --no-points
-                        plot as points rather than lines of the DNA extent
 ```
 ### Outputs for draw.py
 
@@ -83,15 +81,11 @@ Once installed, all you have to do is reactivate the environment after re-enteri
     - one unlabelled, unfiltered centers of DNA damage
     - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
     - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
-- lines
-    - one unlabelled, unfiltered lines between min and max coordinates of DNA damage
-    - labelled and/or filtered lines between min and max coordinates of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
-    - extent of damage within DNA encoded by lengths of lines
 
 ### Example for draw.py
 
-Make sure you are in the sddVisualization folder in order to run the script
-```python3 draw.py -i ./data/NucleusDNADamage-0.5_sdd.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --points```
+Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
+```python3 draw.py -i path/to/test/data -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s .```
 
 ## What are filter/label.yaml files?
 
