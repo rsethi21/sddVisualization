@@ -24,7 +24,7 @@ class SDDReport:
     
     def __init__(self, sddPath: str):
         
-        self.originalDF = SDDReport.openNStore(sddPath)
+        self.originalDF, self.volumes = SDDReport.openNStore(sddPath)
 
     @classmethod
     def splitSlashes(cls, val: str, typ: any):
@@ -98,6 +98,7 @@ class SDDReport:
         '''
         skiprow = 0 # determining row at which the actual data starts
         columnrow = list() # boolean list for which columns are present in the SDD file
+        volumerow = list()
 
         file = open(path, "r") # opening file
         lines = file.readlines() # reading file lines as list
@@ -109,9 +110,8 @@ class SDDReport:
                 columnrow = line[line.index("Data entries")+len("Data entries")+2:-2].split(", ") # finding string list with binary info. and spliting into list of ints
                 columnrow = [True if item == "1" else False for item in columnrow] # converting 1, 0s to booleans
             if "Volumes" in line:
-                try:
-                    int(line[line.index("Volumes, ")+len("Volumes, ")+14])
-                columnrow = line[line.index("Volumes, ")+len("Volumes, ")+2:-2].split(", ")
+                volumerow = line[line.index("Volumes, ")+len("Volumes, "):-2].split(",")
+
 
         with open(path, "r") as file2: # opening file again to read sdd
             df = pd.read_csv(file2, sep=";", header = None, skiprows = skiprow) # opening sdd as a DF with appropriate skipping
@@ -119,8 +119,8 @@ class SDDReport:
 
             columns = list(compress(cls.originalColumnHeaders, columnrow)) # applying boolean list to default column headers
             df.columns = columns # setting default column headers
-        
-        return df
+
+        return df, volumerow
     
     def extractCol(self, colName: str):
         '''
@@ -167,7 +167,7 @@ class SDDReport:
             damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders) # assign appropriate parsed column headers
         except:
             print("There is no damage information column in this file. Skipping...")
-            damage = None
+            damageInfo = None
 
         try:
             cause = [] # instantiating cause list

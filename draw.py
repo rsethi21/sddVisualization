@@ -12,6 +12,7 @@ from parser import SDDReport
 from normalize import trainScaling, ScalePos
 from readYaml import readYaml
 import random
+import math
 
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object
@@ -21,7 +22,6 @@ parseIt.add_argument('-l', '--length', help='length of output image', required=F
 parseIt.add_argument('-f', '--filter', help='yaml file with filter configurations', required=False, default=None) # filter.yaml path to help filter the dataset
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None) # coordinate.yaml to help plot the data with color coordination
 parseIt.add_argument('-s', '--save', help='output folder path', required=False, default='.') # output folder path for png files
-parseIt.add_argument('--points', help='plot as points', default=False, action=argparse.BooleanOptionalAction) # boolean flag to determine if plot has points or lines
 
 def openSSD(pathSSD: str, outpath: str = None):
   '''
@@ -34,7 +34,7 @@ def openSSD(pathSSD: str, outpath: str = None):
   dimensions, chromosomeInfo, damageInfo, cause = sdd.parseVizInfo() # create parsed dataframes of important data
   parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, path=outpath) # create a dataframe with parsed SDD data for visualization
 
-  return parsedSdd
+  return parsedSdd, sdd.volumes
 
 def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
   '''
@@ -62,7 +62,7 @@ def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
     df["xmax"], df["ymax"], df["zmax"] = ScalePos(df["xmax"], sx), ScalePos(df["ymax"], sy), ScalePos(df["zmax"], sz)
     df["xmin"], df["ymin"], df["zmin"] = ScalePos(df["xmin"], sx), ScalePos(df["ymin"], sy), ScalePos(df["zmin"], sz)
 
-  return df
+  return df, sx, sy, sz
 
 def filter(df: pd.DataFrame, filterFilePath: str):
   '''
@@ -160,7 +160,7 @@ def label(df: pd.DataFrame, labelFilePath: str):
 
   return plotBy, outfiles, df
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, points: bool):
+def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -169,65 +169,78 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   '''
   colorlist = list(mcolors.CSS4_COLORS) # various matplotlib colors
   random.shuffle(colorlist) # shuffling to get better color selections in the beginning of the list
-  if 'xmax' not in list(df.columns) or points: # if not xmax (basically no extent since optional in sdd) or user desires points
-    for key in labelCoordinateList: # iterate through list of labels
-      fig = plt.figure() # create new fig object
-      ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
-      uniqueVals = list(df[key].unique()) # find unique values of the column
-      left = uniqueVals.copy() # copy a index tracker for which labels used
-      for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
-        if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
-          if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]), label = l) # plot point with label, its own unique color, and size
-            left.remove(l) # remove from index to not reuse and create a large legend (weird workaround pyplot)
-          else: # if direct and indirect not in dataframe
-            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2, label = l) # cannot change size of points
-            left.remove(l) # remove since first time using this label in legend
-        else: # if label not in index list for unique values
-          if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i])) # plot point without label since already applied but color will be unique to label
-          else: # if no direct, indirect
-            ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
-      plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
-      try:
-        fig.savefig(os.path.join(outputDir, outfiles[key])) # save figure based on labelled column
-      except:
-        fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure based on labelled column
-      plt.close(fig) # close to avoid overlaps
-    
-    fig = plt.figure() # create new figure
-    ax = fig.add_subplot(111, projection="3d") # add 3D component
-    if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-      for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
-        ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
-    else: # if no direct/indirect
-      for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
-        ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
-    fig.savefig(os.path.join(outputDir, f"dsb.png")) # save basic image
-    plt.close(fig) # close to avoid overlaps
 
-  else: # if not points and extent available will plot lines (lines will modulate extent/size of damage so no need for number of direct+indirect)
-    for key in labelCoordinateList: # check each column to label by
-      fig = plt.figure() # create new figure object
-      ax = fig.add_subplot(111, projection="3d") # create 3D plot in figure
-      uniqueVals = list(df[key].unique()) # find all unique values of the label
-      left = uniqueVals.copy() # create an index copy for the labels
-      for x1, y1, z1, x2, y2, z2, l in tqdm(zip(df['xmin'], df['ymin'], df['zmin'], df['xmax'], df['ymax'], df['zmax'], df[key])): # iterate extent of damage and label
-        if l in left: # if label not used
-          ax.plot3D([x1, x2], [y1, y2], [z1, z2], linestyle='-', linewidth = 2, color=colorlist[uniqueVals.index(l)], label = l) # apply label, its unique color, and plot extent of damage
-          left.remove(l) # remove from label index to show its been used
-        else: # if label used
-          ax.plot3D([x1, x2], [y1, y2], [z1, z2], linestyle='-', linewidth = 2, color=colorlist[uniqueVals.index(l)]) # use the labels unique color
-      plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply a legend
-      fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure to output directory
-      plt.close(fig) # close figure to avoid overlap
+  for key in labelCoordinateList: # iterate through list of labels
+    fig = plt.figure() # create new fig object
+    ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
+    uniqueVals = list(df[key].unique()) # find unique values of the column
+    left = uniqueVals.copy() # copy a index tracker for which labels used
+    for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
+      if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
+        if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]), label = l) # plot point with label, its own unique color, and size
+          left.remove(l) # remove from index to not reuse and create a large legend (weird workaround pyplot)
+        else: # if direct and indirect not in dataframe
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2, label = l) # cannot change size of points
+          left.remove(l) # remove since first time using this label in legend
+      
+      else: # if label not in index list for unique values
+        if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i])) # plot point without label since already applied but color will be unique to label
+        else: # if no direct, indirect
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
+    
+    if len(volumes) == 7 and int(volumes[0]) == 1:
+      
+      rx, ry, rz = abs(volumes[1] - volumes[4]), abs(volumes[2] - volumes[5]), abs(volumes[3] - volumes[6])
+
+      # Set of all spherical angles:
+      u = np.linspace(0, 2 * np.pi, 256).reshape(256, 1)
+      v = np.linspace(0, np.pi, 256).reshape(-1, 256)
+
+      # Cartesian coordinates that correspond to the spherical angles:
+      # (this is the equation of an ellipsoid):
+      x = rx * np.sin(v) * np.cos(u)
+      y = ry * np.sin(v) * np.sin(u)
+      z = rz * np.cos(v)
+
+      ax.plot_surface(x, y, z, alpha=0.5, color=colorlist[-1])
+
+    plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
+    try:
+      fig.savefig(os.path.join(outputDir, outfiles[key])) # save figure based on labelled column
+    except:
+      fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure based on labelled column
+    plt.close(fig) # close to avoid overlaps
+    
+  fig = plt.figure() # create new figure
+  ax = fig.add_subplot(111, projection="3d") # add 3D component
+
+  if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+    for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
+      ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
+  else: # if no direct/indirect
+    for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
+      ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
   
-    fig = plt.figure() # create new figure object
-    ax = fig.add_subplot(111, projection="3d") # create 3D plot
-    for x1, y1, z1, x2, y2, z2 in tqdm(zip(df['xmin'], df['ymin'], df['zmin'], df['xmax'], df['ymax'], df['zmax'])): # iterate extent of damage
-      ax.plot3D([x1, x2], [y1, y2], [z1, z2], linestyle='-', linewidth = 2, color='k') # plot points without labels
-    fig.savefig(os.path.join(outputDir, f"dsb.png")) # save unlabelled plot
-    plt.close(fig) # close to avoid overlap
+  if len(volumes) == 7 and int(volumes[0]) == 1:
+      
+      rx, ry, rz = abs(volumes[1] - volumes[4]), abs(volumes[2] - volumes[5]), abs(volumes[3] - volumes[6])
+
+      # Set of all spherical angles:
+      u = np.linspace(0, 2 * np.pi, 256).reshape(256, 1)
+      v = np.linspace(0, np.pi, 256).reshape(-1, 256)
+
+      # Cartesian coordinates that correspond to the spherical angles:
+      # (this is the equation of an ellipsoid):
+      x = rx * np.sin(v) * np.cos(u)
+      y = ry * np.sin(v) * np.sin(u)
+      z = rz * np.cos(v)
+
+      ax.plot_surface(x, y, z, alpha=0.2, color=colorlist[-1])
+
+  fig.savefig(os.path.join(outputDir, f"dsb.png")) # save basic image
+  plt.close(fig) # close to avoid overlaps
   
   
 
@@ -235,12 +248,28 @@ if __name__ == '__main__': # if script run directly
 
   args = parseIt.parse_args() # creating an args object to extract user input
 
-  df = openSSD(args.input) # original unprocessed dataframe; remains untouched
-  newdf = scalePositionalData(df, int(args.width), int(args.length)) # scaling the positional data; return new dataframe object in memory
+  df, volumes = openSSD(args.input) # original unprocessed dataframe; remains untouched
+  newdf, sx, sy, sz = scalePositionalData(df, int(args.width), int(args.length)) # scaling the positional data; return new dataframe object in memory
+  
+  nucleusAxes = []
+  if len(volumes) > 7:
+    try:
+      int(volumes[7])
+      nucleusAxes = [volumes[7], sx.transform([[volumes[8]]]).item(), sy.transform([[volumes[9]]]).item(), sz.transform([[volumes[10]]]).item(), sx.transform([[volumes[11]]]).item(), sy.transform([[volumes[12]]]).item(), sz.transform([[volumes[13]]]).item()]
+    except:
+      nucleusAxes = [volumes[8], sx.transform([[volumes[9]]]).item(), sy.transform([[volumes[10]]]).item(), sz.transform([[volumes[11]]]).item(), sx.transform([[volumes[12]]]).item(), sy.transform([[volumes[13]]]).item(), sz.transform([[volumes[14]]]).item()]
+  elif len(volumes) == 7:
+    nucleusAxes = [volumes[0], sx.transform([[volumes[1]]]).item(), sy.transform([[volumes[2]]]).item(), sz.transform([[volumes[3]]]).item(), sx.transform([[volumes[4]]]).item(), sy.transform([[volumes[5]]]).item(), sz.transform([[volumes[6]]]).item()]
+
+  print(nucleusAxes)
+  print(max(df['xcenter']))
+  print(max(df['ycenter']))
+  print(max(df['zcenter']))
+
   if args.filter != None: # ensuring this is inputed, else basic plot
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
   pb = [] # instantiating empty variable incase labels not applied
   outfiles = {}
   if args.coordinate != None: # ensuring this is inputed, else basic plot
     pb, outfiles, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
-  graph(newdf, pb, outfiles, args.save, args.points) # create and save plots
+  graph(newdf, pb, outfiles, args.save, nucleusAxes) # create and save plots
