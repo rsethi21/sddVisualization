@@ -24,7 +24,7 @@ chromsomeNumber: # Chromosome Number in Nucleus
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 identifier: # Reason for Damage 
-  labelby: False
+  labelby: True
   labels:
     0: physical
     1: chemical

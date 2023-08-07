@@ -160,6 +160,24 @@ def label(df: pd.DataFrame, labelFilePath: str):
 
   return plotBy, outfiles, df
 
+def graphNucleus(ax, volumes):
+
+  if len(volumes) == 7 and int(volumes[0]) == 1:
+      
+      rx, ry, rz = abs(volumes[1] - volumes[4]), abs(volumes[2] - volumes[5]), abs(volumes[3] - volumes[6])
+
+      # Set of all spherical angles:
+      u = np.linspace(0, 2 * np.pi, 256).reshape(256, 1)
+      v = np.linspace(0, np.pi, 256).reshape(-1, 256)
+
+      # Cartesian coordinates that correspond to the spherical angles:
+      # (this is the equation of an ellipsoid):
+      x = rx * np.sin(v) * np.cos(u)
+      y = ry * np.sin(v) * np.sin(u)
+      z = rz * np.cos(v)
+
+      ax.plot_surface(x, y, z, alpha=0.20, color='m')
+
 def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
@@ -190,21 +208,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
     
-    if len(volumes) == 7 and int(volumes[0]) == 1:
-      
-      rx, ry, rz = abs(volumes[1] - volumes[4]), abs(volumes[2] - volumes[5]), abs(volumes[3] - volumes[6])
-
-      # Set of all spherical angles:
-      u = np.linspace(0, 2 * np.pi, 256).reshape(256, 1)
-      v = np.linspace(0, np.pi, 256).reshape(-1, 256)
-
-      # Cartesian coordinates that correspond to the spherical angles:
-      # (this is the equation of an ellipsoid):
-      x = rx * np.sin(v) * np.cos(u)
-      y = ry * np.sin(v) * np.sin(u)
-      z = rz * np.cos(v)
-
-      ax.plot_surface(x, y, z, alpha=0.5, color=colorlist[-1])
+    graphNucleus(ax, volumes)
 
     plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
     try:
@@ -223,21 +227,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
   
-  if len(volumes) == 7 and int(volumes[0]) == 1:
-      
-      rx, ry, rz = abs(volumes[1] - volumes[4]), abs(volumes[2] - volumes[5]), abs(volumes[3] - volumes[6])
-
-      # Set of all spherical angles:
-      u = np.linspace(0, 2 * np.pi, 256).reshape(256, 1)
-      v = np.linspace(0, np.pi, 256).reshape(-1, 256)
-
-      # Cartesian coordinates that correspond to the spherical angles:
-      # (this is the equation of an ellipsoid):
-      x = rx * np.sin(v) * np.cos(u)
-      y = ry * np.sin(v) * np.sin(u)
-      z = rz * np.cos(v)
-
-      ax.plot_surface(x, y, z, alpha=0.2, color=colorlist[-1])
+  graphNucleus(ax, volumes)
 
   fig.savefig(os.path.join(outputDir, f"dsb.png")) # save basic image
   plt.close(fig) # close to avoid overlaps
@@ -253,18 +243,9 @@ if __name__ == '__main__': # if script run directly
   
   nucleusAxes = []
   if len(volumes) > 7:
-    try:
-      int(volumes[7])
-      nucleusAxes = [volumes[7], sx.transform([[volumes[8]]]).item(), sy.transform([[volumes[9]]]).item(), sz.transform([[volumes[10]]]).item(), sx.transform([[volumes[11]]]).item(), sy.transform([[volumes[12]]]).item(), sz.transform([[volumes[13]]]).item()]
-    except:
-      nucleusAxes = [volumes[8], sx.transform([[volumes[9]]]).item(), sy.transform([[volumes[10]]]).item(), sz.transform([[volumes[11]]]).item(), sx.transform([[volumes[12]]]).item(), sy.transform([[volumes[13]]]).item(), sz.transform([[volumes[14]]]).item()]
+    nucleusAxes = [int(volumes[7]), sx.transform([[volumes[8]]]).item(), sy.transform([[volumes[9]]]).item(), sz.transform([[volumes[10]]]).item(), sx.transform([[volumes[11]]]).item(), sy.transform([[volumes[12]]]).item(), sz.transform([[volumes[13]]]).item()]
   elif len(volumes) == 7:
-    nucleusAxes = [volumes[0], sx.transform([[volumes[1]]]).item(), sy.transform([[volumes[2]]]).item(), sz.transform([[volumes[3]]]).item(), sx.transform([[volumes[4]]]).item(), sy.transform([[volumes[5]]]).item(), sz.transform([[volumes[6]]]).item()]
-
-  print(nucleusAxes)
-  print(max(df['xcenter']))
-  print(max(df['ycenter']))
-  print(max(df['zcenter']))
+    nucleusAxes = [int(volumes[0]), sx.transform([[volumes[1]]]).item(), sy.transform([[volumes[2]]]).item(), sz.transform([[volumes[3]]]).item(), sx.transform([[volumes[4]]]).item(), sy.transform([[volumes[5]]]).item(), sz.transform([[volumes[6]]]).item()]
 
   if args.filter != None: # ensuring this is inputed, else basic plot
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
