@@ -6,7 +6,8 @@
 
 - An SDD file is a standardized data file that stores information about DNA damage. This allows for a predictable data input and output for visualization.
 - For an SDD file, Some fields are required and some are optional. These files also have a header with more information about what the files contain.
-- For more information about SDD files, see this paper: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6407706/ 
+- For more information about SDD files, see this paper: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6407706/
+- There is test data in the following website that documents SDD file format: https://standard-for-dna-damage.readthedocs.io/en/latest/index.html
 
 ## What is the goal for this tool?
 
