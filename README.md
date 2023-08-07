@@ -8,6 +8,7 @@
 - For an SDD file, Some fields are required and some are optional. These files also have a header with more information about what the files contain.
 - For more information about SDD files, see this paper: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6407706/
 - There is test data in the following website that documents SDD file format: https://standard-for-dna-damage.readthedocs.io/en/latest/index.html
+    - This test data is provided in the ./data folder with a complete and minimal SDD example
 
 ## What is the goal for this tool?
 
@@ -78,7 +79,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 ```
 ### Outputs for draw.py
 
-- points
+- points representing center of damage extent
     - one unlabelled, unfiltered centers of DNA damage
     - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
     - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
@@ -86,7 +87,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 ### Example for draw.py
 
 Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
-```python3 draw.py -i path/to/test/data -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s .```
+```python3 draw.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s .```
 
 ## What are filter/label.yaml files?
 
