@@ -46,9 +46,10 @@ def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
   df = originaldf.copy() # create a copy of the dataframe to ensure returning back the original
   if "xmax" not in df.columns: # if no xmax in dataframe, then assume only center data so only scale those
     # trainScaling return a scaler from the data inputted and ScalePos actually scales all the values
-    x = ScalePos(df['xcenter'], trainScaling(width, length, df['xcenter']))
-    y = ScalePos(df['ycenter'], trainScaling(width, length, df['ycenter']))
-    z = ScalePos(df['zcenter'], trainScaling(width, length, df['zcenter']))
+    sx, sy, sz = trainScaling(width, length, df['xcenter']), trainScaling(width, length, df['ycenter']), trainScaling(width, length, df['zcenter'])
+    x = ScalePos(df['xcenter'], sx)
+    y = ScalePos(df['ycenter'], sy)
+    z = ScalePos(df['zcenter'], sz)
     df["xcenter"] = x
     df["ycenter"] = y
     df["zcenter"] = z
