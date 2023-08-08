@@ -12,14 +12,14 @@ structure: # Form of DNA
     2: euchromatin
     3: free fragment
     4: mitochondrial
-  outfile: dsb_structure.png
+  outfile: damage_structure.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 chromsomeNumber: # Chromosome Number in Nucleus
   labelby: True
   labels:
-  outfile: dsb_chromosomeNumber_all.png
+  outfile: damage_chromosomeNumber_all.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
@@ -30,7 +30,7 @@ identifier: # Reason for Damage
     1: chemical
     2: chemical and physical
     3: charge migration
-  outfile: dsb_identifier.png
+  outfile: damage_identifier.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
@@ -39,4 +39,4 @@ dsbPresent: # DSB or Single/Base Damage
   labels:
     0: SSB and/or Base
     1: DSBs
-  outfile: dsb_dsbpresent.png
+  outfile: damage_dsbpresent.png
