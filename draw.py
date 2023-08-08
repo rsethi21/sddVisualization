@@ -86,7 +86,7 @@ def filter(df: pd.DataFrame, filterFilePath: str):
     filters = [] # instantiating a list that will house the desired values from the specific column of interest
     if key == 'structure' or key == 'identifier' or key == 'dsbPresent': # these keys/columns are of a specific format in the yaml
       for i in newDict[key].keys(): # iterate each unique entry in the column of interest
-        if newDict[key][i]['include']: # check is user desires this entry
+        if newDict[key][i]: # check is user desires this entry
           filters.append(i) # if so, add to filter as one to keep
     elif key == "direct" or key == "indirect" or key == "numBases" or key == "singleNumber": # these keys/columns are of another specific format in the yaml
       # the set of if else statements below are checks to ensure user requests are valid
