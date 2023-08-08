@@ -223,7 +223,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
 
   if "totalDamages" in df.columns and size:: # if direct and indirect (changing size of damage on plot since basically the number of damages)
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
-      ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
+      ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["totalDamages"][i])) # graph with size modulation and no labels
   else: # if no direct/indirect
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
