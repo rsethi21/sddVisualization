@@ -12,7 +12,6 @@ from parser import SDDReport
 from normalize import trainScaling, ScalePos
 from readYaml import readYaml
 import random
-import math
 
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object
@@ -22,6 +21,7 @@ parseIt.add_argument('-l', '--length', help='length of output image', required=F
 parseIt.add_argument('-f', '--filter', help='yaml file with filter configurations', required=False, default=None) # filter.yaml path to help filter the dataset
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None) # coordinate.yaml to help plot the data with color coordination
 parseIt.add_argument('-s', '--save', help='output folder path', required=False, default='.') # output folder path for png files
+parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 
 def openSSD(pathSSD: str, outpath: str = None):
   '''
@@ -179,7 +179,7 @@ def graphNucleus(ax, volumes):
 
       ax.plot_surface(x, y, z, alpha=0.20, color='m')
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list):
+def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list, size: bool):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -196,7 +196,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     left = uniqueVals.copy() # copy a index tracker for which labels used
     for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
       if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
-        if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+        if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]), label = l) # plot point with label, its own unique color, and size
           left.remove(l) # remove from index to not reuse and create a large legend (weird workaround pyplot)
         else: # if direct and indirect not in dataframe
@@ -204,7 +204,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
           left.remove(l) # remove since first time using this label in legend
       
       else: # if label not in index list for unique values
-        if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+        if "totalDamages" in df.columns and size:# if direct and indirect (changing size of damage on plot since basically the number of damages)
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
@@ -221,7 +221,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   fig = plt.figure() # create new figure
   ax = fig.add_subplot(111, projection="3d") # add 3D component
 
-  if "direct" in df.columns and "indirect" in df.columns: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+  if "totalDamages" in df.columns and size:: # if direct and indirect (changing size of damage on plot since basically the number of damages)
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["direct"][i] + df["indirect"][i])) # graph with size modulation and no labels
   else: # if no direct/indirect
@@ -254,4 +254,4 @@ if __name__ == '__main__': # if script run directly
   outfiles = {}
   if args.coordinate != None: # ensuring this is inputed, else basic plot
     pb, outfiles, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
-  graph(newdf, pb, outfiles, args.save, nucleusAxes) # create and save plots
+  graph(newdf, pb, outfiles, args.save, nucleusAxes, args.size) # create and save plots
