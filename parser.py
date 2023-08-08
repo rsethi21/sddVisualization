@@ -181,7 +181,7 @@ class SDDReport:
                 damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
             length = len(damageInfo[0])
             damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
-            damageInfo["totalDamages"] = damageInfo["numBases"] + damageInfo["singleNumber"]
+            damageInfo["totalDamages"] = damageInfo["singleNumber"]
         except:
             print("There is no damage information column in this file. Skipping...")
             damageInfo = pd.DataFrame()
