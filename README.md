@@ -31,24 +31,23 @@ python3 -m pip3 install --upgrade pip
 ```
 git clone https://github.com/rsethi21/sddVisualization.git
 ```
-move into this sddVisualization folder after installation complete
-### Virtual Environment (only do this once)
+move into this sddVisualization folder after installation is complete
+### Virtual Environment
 
-create venv:
+create venv: # only do this once
 ```
 python3 -m pip3 install --user virtualenv
 python3 -m venv [name of environment]
 ```
-activate venv:
+activate venv: # do this everytime you open a new shell session and want to run this tool
 ```
 source [name of environment]/bin/activate # only in linux
 [name of environment]\Scripts\activate.bat # only in windows
 ```
-install packages:
+install packages: # only do this once
 ```
 pip3 install -r requirements.txt
 ```
-Once installed, all you have to do is reactivate the environment after re-entering the command prompt/shell instance using the active venv command
 
 ### Scripts
 
@@ -61,7 +60,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 
 ### Inputs for draw.py
 
-```python3 draw.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE]```
+```python3 draw.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [--size | --no-size]```
 ```
 - options:
   -h, --help            show this help message and exit
@@ -76,6 +75,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
   -c COORDINATE, --coordinate COORDINATE
                         yaml file with labelling configurations
   -s SAVE, --save SAVE  output folder path
+  --size  whether to modulate size of points by number of confirmed damages
 ```
 ### Outputs for draw.py
 
@@ -87,7 +87,7 @@ Once installed, all you have to do is reactivate the environment after re-enteri
 ### Example for draw.py
 
 Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
-```python3 draw.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s .```
+```python3 draw.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --size```
 
 ## What are filter/label.yaml files?
 
