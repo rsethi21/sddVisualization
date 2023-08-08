@@ -215,7 +215,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     try:
       fig.savefig(os.path.join(outputDir, outfiles[key])) # save figure based on labelled column
     except:
-      fig.savefig(os.path.join(outputDir, f"dsb_{key}.png")) # save figure based on labelled column
+      fig.savefig(os.path.join(outputDir, f"damage_{key}.png")) # save figure based on labelled column
     plt.close(fig) # close to avoid overlaps
     
   fig = plt.figure() # create new figure
@@ -230,7 +230,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   
   graphNucleus(ax, volumes)
 
-  fig.savefig(os.path.join(outputDir, f"dsb.png")) # save basic image
+  fig.savefig(os.path.join(outputDir, f"damage.png")) # save basic image
   plt.close(fig) # close to avoid overlaps
   
   
