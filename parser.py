@@ -178,21 +178,38 @@ class SDDReport:
 
         try:
             breakSpecs = [] # instantiating damageInfo list
+            indirect = 0
+            direct = 0
+            indirectNDirect = 0
             for row5 in self.extractCol("breakspec"): # iterating through rows of the damageInfo columns
                 temp = SDDReport.splitBoth(str(row5), type(0)) # split values into ints
                 temp = np.array([list(temp[i*3:i*3+3]) for i in range(len(temp)/3)])
                 tempDF = pd.DataFrame(temp, columns=SDDReport.breakSpecsHeaders)
+                
                 singleNumber = len(tempDF[tempDF["strand"] == 1 and tempDF["strand"] == 4]["base"].unique())
                 baseNumber = len(tempDF[tempDF["strand"] == 2 and tempDF["strand"] == 3]["base"].unique())
+                
                 if len(tempDF["identifier"].unique()) == 1:
                     identifier = tempDF["identifier"].unique()[0]
+                    if identifier == 1:
+                        direct += 1
+                    if identifier == 2:
+                        indirect += 1
+                    if identifier == 3:
+                        indirectNDirect += 1
                 elif 1 in tempDF["identifier"].unique() and 2 in tempDF["identifier"].unique():
                     identifier = 3
+                    direct += len(tempDF["identifier"] == 1)
+                    indirect += len(tempDF["identifier"] == 2)
+                    indirectNDirect += len(tempDF["identifier"] == 3)
                 else:
                     identifier = max(tempDF["identifier"].unique())
+                    direct += len(tempDF["identifier"] == 1)
+                    indirect += len(tempDF["identifier"] == 2)
+                    indirectNDirect += len(tempDF["identifier"] == 3)
                 # something for DSB
-                breakSpecs.append([baseNumber, singleNumber, identifier])
-            breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier"])
+                breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect])
+            breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect"])
         except:
             print("There is no damage information column in this file. Skipping...")
             breakSpecs = pd.DataFrame()
@@ -218,6 +235,8 @@ class SDDReport:
                 cause.drop(columns=["identifier"], inplace = True)
             elif "identifier" not in list(breakSpecs.columns) and "identifier" in list(cause.columns):
                 cause["identifier"] = cause["identifier"] + 1
+            if "direct" in breakSpecs.columns and "indirect" in breakSpecs.columns:
+                cause.drop(columns=["direct", "indirect"])
         except:
             print("There is no cause information column in this file. Skipping...")
             cause = pd.DataFrame()
