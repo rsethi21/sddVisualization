@@ -177,31 +177,36 @@ class SDDReport:
             chromosomeInfo = pd.DataFrame()
 
         try:
-            damageInfo = [] # instantiating damageInfo list
-            for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
-                damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
-            length = len(damageInfo[0])
-            damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
+            breakSpecs = [] # instantiating damageInfo list
+            for row5 in self.extractCol("breakspec"): # iterating through rows of the damageInfo columns
+                temp = SDDReport.splitBoth(str(row5), type(0)) # split values into ints
+                temp = np.array([list(temp[i*3:i*3+3]) for i in range(len(temp)/3)])
+                tempDF = pd.DataFrame(temp, columns=SDDReport.breakSpecsHeaders)
+                singleNumber = len(tempDF[tempDF["strand"] == 1 and tempDF["strand"] == 4]["base"].unique())
+                baseNumber = len(tempDF[tempDF["strand"] == 2 and tempDF["strand"] == 3]["base"].unique())
+                if len(tempDF["identifier"].unique()) == 1:
+                    identifier = tempDF["identifier"].unique()[0]
+                elif 1 in tempDF["identifier"].unique() and 2 in tempDF["identifier"].unique():
+                    identifier = 3
+                else:
+                    identifier = max(tempDF["identifier"].unique())
+                # something for DSB
+                breakSpecs.append([baseNumber, singleNumber, identifier])
+            breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier"])
+        except:
+            print("There is no damage information column in this file. Skipping...")
+            breakSpecs = pd.DataFrame()
+
+        try:
+            if len(breakSpecs.columns) == 0:
+                damageInfo = [] # instantiating damageInfo list
+                for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
+                    damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
+                length = len(damageInfo[0])
+                damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
         except:
             print("There is no damage information column in this file. Skipping...")
             damageInfo = pd.DataFrame()
-
-        damageInfo = 
-
-        if 'singleNumber' not in damageInfo.columns:
-            try:
-                breakSpecs = [] # instantiating damageInfo list
-                for row5 in self.extractCol("breakspec"): # iterating through rows of the damageInfo columns
-                    temp = SDDReport.splitBoth(str(row5), type(0)) # split values into ints
-                    temp = np.array([list(temp[i*3:i*3+3]) for i in range(len(temp)/3)])
-                    tempDF = pd.DataFrame(temp, columns=SDDReport.breakSpecsHeaders)
-                    strand1 = tempDF[(tempDF['identifier'] != 0) & (tempDF['strand'] == 1 or temp['strand'] == 2)]
-                    strand2 = tempDF[(tempDF['identifier'] != 0) & (tempDF['strand'] == 3 or temp['strand'] == 4)]
-                    breakSpecs.append([len(strand1['base'].unique()) + len(strand2['base'].unique())])
-                breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=['singleNumber']) # assign appropriate parsed column headers
-            except:
-                print("There is no damage information column in this file. Skipping...")
-                breakSpecs = pd.DataFrame()
         
         try:
             cause = [] # instantiating cause list
@@ -209,13 +214,15 @@ class SDDReport:
                 cause.append(SDDReport.splitCommas(str(row4), type(0))) # split values into ints
             length = len(cause[0])
             cause = pd.DataFrame(np.array(cause), columns=SDDReport.causeHeaders[0:length]) # assign appropriate parsed column headers
-            if "singleNumber" not in list(damageInfo.columns) and "singleNumber" not in list(breakSpecs.columns):
-                cause["singleNumber"] = cause["direct"] + damageInfo["indirect"]
+            if "identifier" in list(breakSpecs.columns) and "identifier" in list(cause.columns):
+                cause.drop(columns=["identifier"], inplace = True)
+            elif "identifier" not in list(breakSpecs.columns) and "identifier" in list(cause.columns):
+                cause["identifier"] = cause["identifier"] + 1
         except:
             print("There is no cause information column in this file. Skipping...")
             cause = pd.DataFrame()
 
-        return dimensions, chromosomeInfo, damageInfo, cause
+        return dimensions, chromosomeInfo, damageInfo, cause, breakSpecs
 
     def saveParsed(self, df1: pd.DataFrame, *dfs: pd.DataFrame, path: str = None):
         '''
