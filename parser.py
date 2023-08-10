@@ -121,6 +121,13 @@ class SDDReport:
             if "Volumes" in line:
                 volumerow = line[line.index("Volumes, ")+len("Volumes, "):-2].split(",")
                 volumerow = [float(item) for item in volumerow]
+            else:
+                volumerow = None
+            if "Damage definition" in line:
+                damage = line[line.index("Damage definition, ")+len("Damage definition, "):-2].split(",")
+                damage = [str(item) for item in damage]
+            else:
+                damage = None
 
 
         with open("./temp.csv", "r") as file2: # opening file again to read sdd
@@ -132,7 +139,7 @@ class SDDReport:
 
         os.remove("./temp.csv")
 
-        return df, volumerow
+        return df, volumerow, damage
     
     def extractCol(self, colName: str):
         '''
@@ -143,7 +150,7 @@ class SDDReport:
         '''
         return self.originalDF[colName]
 
-    def parseVizInfo(self):
+    def parseVizInfo(self, damagerow):
         '''
         inputs: none
         outputs: dataframes of dimensions, chromosomeInfo, damageInfo, cause
@@ -208,6 +215,10 @@ class SDDReport:
                     indirect += len(tempDF["identifier"] == 2)
                     indirectNDirect += len(tempDF["identifier"] == 3)
                 # something for DSB
+                if damagerow != None:
+                    flag = int(damagerow[1])
+                    bps = float(damagerow[2])
+
                 breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect])
             breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect"])
         except:
@@ -221,6 +232,16 @@ class SDDReport:
                     damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
                 length = len(damageInfo[0])
                 damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
+            else:
+                if "dsbPresent" not in breakSpecs.columns:
+                    damageInfo = [] # instantiating damageInfo list
+                    for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
+                        damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
+                    length = len(damageInfo[0])
+                    damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
+                    damageInfo = pd.DataFrame(damageInfo["dsbPresent"], columns=["dsbPresent"])
+                else:
+                    damageInfo = pd.DataFrame()
         except:
             print("There is no damage information column in this file. Skipping...")
             damageInfo = pd.DataFrame()
@@ -235,8 +256,10 @@ class SDDReport:
                 cause.drop(columns=["identifier"], inplace = True)
             elif "identifier" not in list(breakSpecs.columns) and "identifier" in list(cause.columns):
                 cause["identifier"] = cause["identifier"] + 1
-            if "direct" in breakSpecs.columns and "indirect" in breakSpecs.columns:
-                cause.drop(columns=["direct", "indirect"])
+            if "direct" in breakSpecs.columns:
+                cause.drop(columns=["direct"])
+            if "indirect" in breakSpecs.columns:
+                cause.drop(columns=["indirect"])
         except:
             print("There is no cause information column in this file. Skipping...")
             cause = pd.DataFrame()
