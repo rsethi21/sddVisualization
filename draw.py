@@ -31,8 +31,10 @@ def openSSD(pathSSD: str, outpath: str = None):
   The goal of this function is use the SDDReport object to save the parsed SDD.
   '''
   sdd = SDDReport(pathSSD) # create SDD object
-  dimensions, chromosomeInfo, damageInfo, cause = sdd.parseVizInfo() # create parsed dataframes of important data
-  parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, path=outpath) # create a dataframe with parsed SDD data for visualization
+  dimensions, chromosomeInfo, damageInfo, cause, breakSpecs = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
+  parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, path=outpath) # create a dataframe with parsed SDD data for visualization
+
+  print(parsedSdd)
 
   return parsedSdd, sdd.volumes
 
@@ -197,7 +199,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
       if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
         if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i]), label = l) # plot point with label, its own unique color, and size
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i]), label = l) # plot point with label, its own unique color, and size
           left.remove(l) # remove from index to not reuse and create a large legend (weird workaround pyplot)
         else: # if direct and indirect not in dataframe
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2, label = l) # cannot change size of points
@@ -205,7 +207,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
       
       else: # if label not in index list for unique values
         if "totalDamages" in df.columns and size:# if direct and indirect (changing size of damage on plot since basically the number of damages)
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2*(df["direct"][i] + df["indirect"][i])) # plot point without label since already applied but color will be unique to label
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
     
@@ -221,9 +223,9 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   fig = plt.figure() # create new figure
   ax = fig.add_subplot(111, projection="3d") # add 3D component
 
-  if "totalDamages" in df.columns and size:: # if direct and indirect (changing size of damage on plot since basically the number of damages)
+  if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
-      ax.plot3D(x, y, z, marker=".", color='k', markersize=2*(df["totalDamages"][i])) # graph with size modulation and no labels
+      ax.plot3D(x, y, z, marker=".", color='k', markersize=(df["totalDamages"][i])) # graph with size modulation and no labels
   else: # if no direct/indirect
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points

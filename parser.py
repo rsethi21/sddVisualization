@@ -25,7 +25,7 @@ class SDDReport:
 
     def __init__(self, sddPath: str):
         
-        self.originalDF, self.volumes = SDDReport.openNStore(sddPath)
+        self.originalDF, self.volumes, self.damages = SDDReport.openNStore(sddPath)
 
     @classmethod
     def splitSlashes(cls, val: str, typ: any):
@@ -76,7 +76,28 @@ class SDDReport:
         return values
 
     @classmethod
-    def splitBoth(cls, val: str, typ: any):
+    def splitAny(cls, val: str, typ: any, sep: str):
+        values = list(val.split(sep)) # list of separated values
+        if sep == ' ':
+            values = [value for value in values if value not in [" ", ""]]
+        if len(values) != 0: # below converting data into proper types
+            if type(values[0]) != typ:
+                if typ == type(0): # converting to int
+                    values = [int(value) for value in values]
+                elif typ == type(""): # converting to str
+                    values = [str(value) for value in values]
+                elif typ == type(0.0): # converting to float
+                    values = [float(value) for value in values]
+                else: # unknown data type skip
+                    output = f"Unknown type for entry {val}. Defaulted to existing type: {type(val)}"
+                    print(output)
+                    print()
+            return values
+        else:
+            return None
+
+    @classmethod
+    def splitBoth(cls, val: str, typ: any, secondSplit = ','):
         '''
         inputs: requires a string that has slashes and then commas as a delimiter, and final type of the split values
         outputs: return a list of values after delimitation
@@ -86,7 +107,10 @@ class SDDReport:
         lst = SDDReport.splitSlashes(val, type("")) # split outer first
         vals = []
         for v in lst:
-            vals.append(SDDReport.splitCommas(v, typ)) # split inner second
+            if secondSplit == ',':
+                vals.append(SDDReport.splitCommas(v, typ)) # split inner second
+            else:
+                vals.append(SDDReport.splitAny(v, typ, secondSplit))
         return vals
 
     @classmethod
@@ -121,13 +145,9 @@ class SDDReport:
             if "Volumes" in line:
                 volumerow = line[line.index("Volumes, ")+len("Volumes, "):-2].split(",")
                 volumerow = [float(item) for item in volumerow]
-            else:
-                volumerow = None
             if "Damage definition" in line:
                 damage = line[line.index("Damage definition, ")+len("Damage definition, "):-2].split(",")
                 damage = [str(item) for item in damage]
-            else:
-                damage = None
 
 
         with open("./temp.csv", "r") as file2: # opening file again to read sdd
@@ -189,12 +209,19 @@ class SDDReport:
             direct = 0
             indirectNDirect = 0
             for row5 in self.extractCol("breakspec"): # iterating through rows of the damageInfo columns
-                temp = SDDReport.splitBoth(str(row5), type(0)) # split values into ints
-                temp = np.array([list(temp[i*3:i*3+3]) for i in range(len(temp)/3)])
-                tempDF = pd.DataFrame(temp, columns=SDDReport.breakSpecsHeaders)
-                
-                singleNumber = len(tempDF[tempDF["strand"] == 1 and tempDF["strand"] == 4]["base"].unique())
-                baseNumber = len(tempDF[tempDF["strand"] == 2 and tempDF["strand"] == 3]["base"].unique())
+                try:
+                    temp = SDDReport.splitBoth(str(row5), type(0), secondSplit=' ') # split values into ints
+                except:
+                    temp = SDDReport.splitBoth(str(row5), type(0)) # split values into ints
+                try:
+                    temp.remove(None)
+                except:
+                    pass
+
+                tempDF = pd.DataFrame(np.array(temp), columns=SDDReport.breakSpecsHeaders)
+
+                singleNumber = len(tempDF[((tempDF["strand"] == 1) | (tempDF["strand"] == 4)) & (tempDF["identifier"] != 0)]["strand"])
+                baseNumber = len(tempDF[((tempDF["strand"] == 2) | (tempDF["strand"] == 3)) & (tempDF["identifier"] != 0)]["base"])
                 
                 if len(tempDF["identifier"].unique()) == 1:
                     identifier = tempDF["identifier"].unique()[0]
@@ -214,38 +241,53 @@ class SDDReport:
                     direct += len(tempDF["identifier"] == 1)
                     indirect += len(tempDF["identifier"] == 2)
                     indirectNDirect += len(tempDF["identifier"] == 3)
-                # something for DSB
-                if damagerow != None:
-                    flag = int(damagerow[1])
-                    bps = float(damagerow[2])
 
-                breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect])
-            breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect"])
+                present = -1
+                if damagerow != None and int(damagerow[1]) == 0:
+                    bps = float(damagerow[2])
+                    strand1 = list(tempDF[(tempDF["strand"] == 1) & (tempDF["identifier"] != 0)]["base"])
+                    strand4 = list(tempDF[(tempDF["strand"] == 4) & (tempDF["identifier"] != 0)]["base"])
+                    distances = []
+                    for base in strand1:
+                        differences = np.array(strand4) - base
+                        distances.extend(differences)
+                    if len(distances) == 0:
+                        distances.append(bps+1)
+                    if min(distances) <= bps:
+                        present = 1
+                    else:
+                        present = 0
+                else:
+                    pass
+
+                breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect, present])
+            breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect", "dsbPresent"])
+            if sum(breakSpecs["dsbPresent"] < 0):
+                breakSpecs.drop(columns=["dsbPresent"], inplace=True)
         except:
-            print("There is no damage information column in this file. Skipping...")
+            print("There is no break specification information column in this file. Skipping...")
             breakSpecs = pd.DataFrame()
 
         try:
-            if len(breakSpecs.columns) == 0:
+            if len(list(breakSpecs.columns)) == 0:
                 damageInfo = [] # instantiating damageInfo list
                 for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
                     damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
                 length = len(damageInfo[0])
                 damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
             else:
-                if "dsbPresent" not in breakSpecs.columns:
-                    damageInfo = [] # instantiating damageInfo list
-                    for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
-                        damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
-                    length = len(damageInfo[0])
-                    damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
-                    damageInfo = pd.DataFrame(damageInfo["dsbPresent"], columns=["dsbPresent"])
-                else:
-                    damageInfo = pd.DataFrame()
+                damageInfo = [] # instantiating damageInfo list
+                for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
+                    damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
+                length = len(damageInfo[0])
+                damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
+                damageInfo = pd.DataFrame(damageInfo["dsbPresent"])
+                if "dsbPresent" in list(breakSpecs.columns):
+                    breakSpecs.drop(columns=["dsbPresent"], inplace=True)
         except:
             print("There is no damage information column in this file. Skipping...")
             damageInfo = pd.DataFrame()
-        
+            
         try:
             cause = [] # instantiating cause list
             for row4 in self.extractCol("cause"): # iterating through rows of then cause columns
@@ -257,9 +299,9 @@ class SDDReport:
             elif "identifier" not in list(breakSpecs.columns) and "identifier" in list(cause.columns):
                 cause["identifier"] = cause["identifier"] + 1
             if "direct" in breakSpecs.columns:
-                cause.drop(columns=["direct"])
+                cause.drop(columns=["direct"], inplace=True)
             if "indirect" in breakSpecs.columns:
-                cause.drop(columns=["indirect"])
+                cause.drop(columns=["indirect"], inplace=True)
         except:
             print("There is no cause information column in this file. Skipping...")
             cause = pd.DataFrame()
@@ -278,7 +320,10 @@ class SDDReport:
 
         for df in dfs: # iterating through each dataframe in the list
             finaldf = finaldf.join(df) # join the dataframe columns into one big dataframe
-    
+
+        if "numBases" and "singleNumber" in finaldf.columns:
+            finaldf["totalDamages"] = finaldf["numBases"] + finaldf["singleNumber"]
+
         self.parsedDf = finaldf # set parsedDF as an value of the object
         if path != None: # if path is None then does not save to a file otherwise saves to path
             finaldf.to_csv(path) # saves to path
