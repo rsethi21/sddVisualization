@@ -100,3 +100,4 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 - Make messages a bit more clear and remove warnings from output
 - integrate lesion time and a pipeline for video creation
 - make the nucleus more translucent
+- apply test/end cases for the tool
