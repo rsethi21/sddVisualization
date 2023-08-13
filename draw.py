@@ -34,8 +34,6 @@ def openSSD(pathSSD: str, outpath: str = None):
   dimensions, chromosomeInfo, damageInfo, cause, breakSpecs = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
   parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, path=outpath) # create a dataframe with parsed SDD data for visualization
 
-  print(parsedSdd)
-
   return parsedSdd, sdd.volumes
 
 def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):

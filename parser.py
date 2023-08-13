@@ -28,59 +28,10 @@ class SDDReport:
         self.originalDF, self.volumes, self.damages = SDDReport.openNStore(sddPath)
 
     @classmethod
-    def splitSlashes(cls, val: str, typ: any):
-        '''
-        inputs: requires a string that has slashes as a delimiter, and final type of the split values
-        outputs: return a list of values after delimitation
-        
-        The goal of this function is to split the string and convert to desired output.  Class method since no need for instance specific changes.
-        '''
-        sep = "/" # common outer header for sdd file
-        values = list(val.split(sep)) # list of separated values
-        if type(values[0]) != typ: # below converting data into proper types
-            if typ == type(0): # converting to int
-                values = [int(value) for value in values]
-            elif typ == type(""): # converting to str
-                values = [str(value) for value in values]
-            elif typ == type(0.0): # converting to float
-                values = [float(value) for value in values]
-            else: # unknown data type skip
-                output = f"Unknown type for entry {val}. Defaulted to existing type: {type(val)}"
-                print(output)
-                print()
-        
-        return values
-    
-    @classmethod
-    def splitCommas(cls, val: str, typ: any):
-        '''
-        inputs: requires a string that has commas as a delimiter, and final type of the split values
-        outputs: return a list of values after delimitation
-        
-        The goal of this function is to split the string and convert to desired output. Class method since no need for instance specific changes.
-        '''
-        sep = "," # common inner header for sdd file
-        values = list(val.split(sep)) # list of separated values
-        if type(values[0]) != typ: # below converting data into proper types
-            if typ == type(0): # converting to int
-                values = [int(value) for value in values]
-            elif typ == type(""): # converting to str
-                values = [str(value) for value in values]
-            elif typ == type(0.0): # converting to float
-                values = [float(value) for value in values]
-            else: # unknown data type skip
-                output = f"Unknown type for entry {val}. Defaulted to existing type: {type(val)}"
-                print(output)
-                print()
-        
-        return values
-
-    @classmethod
     def splitAny(cls, val: str, typ: any, sep: str):
         values = list(val.split(sep)) # list of separated values
-        if sep == ' ':
-            values = [value for value in values if value not in [" ", ""]]
         if len(values) != 0: # below converting data into proper types
+            values = [value for value in values if value not in [" ", ""]]
             if type(values[0]) != typ:
                 if typ == type(0): # converting to int
                     values = [int(value) for value in values]
@@ -97,20 +48,17 @@ class SDDReport:
             return None
 
     @classmethod
-    def splitBoth(cls, val: str, typ: any, secondSplit = ','):
+    def splitBoth(cls, val: str, typ: any, firstSplit = '/', secondSplit = ','):
         '''
         inputs: requires a string that has slashes and then commas as a delimiter, and final type of the split values
         outputs: return a list of values after delimitation
         
         The goal of this function is split values that are delimited by slashes then commas which is common in an sdd file. Class method since no need for instance specific changes.
         '''
-        lst = SDDReport.splitSlashes(val, type("")) # split outer first
+        lst = SDDReport.splitAny(val, type(""), firstSplit) # split outer first
         vals = []
         for v in lst:
-            if secondSplit == ',':
-                vals.append(SDDReport.splitCommas(v, typ)) # split inner second
-            else:
-                vals.append(SDDReport.splitAny(v, typ, secondSplit))
+            vals.append(SDDReport.splitAny(v, typ, secondSplit))
         return vals
 
     @classmethod
@@ -162,12 +110,6 @@ class SDDReport:
         return df, volumerow, damage
     
     def extractCol(self, colName: str):
-        '''
-        inputs: colName as assigned in DF
-        outputs: pandas series object with specified column
-        
-        The goal of this function is basic function to get column info. Instance method because specific parsed SDD
-        '''
         return self.originalDF[colName]
 
     def parseVizInfo(self, damagerow):
@@ -183,11 +125,19 @@ class SDDReport:
             for row in self.extractCol("xyz"): # iterating through rows of the coordinate columns
                 temp = [] # temporary list to store values from each row
                 if '/' in row:
-                    for l in SDDReport.splitBoth(str(row), type(0.0)): # split values into floats
-                        temp += l # extend temp list with values from row
-                    dimensions.append(temp) # append values from row
+                    try:
+                        for l in SDDReport.splitBoth(str(row), type(0.0), secondSplit=','): # split values into floats
+                            temp += l # extend temp list with values from row
+                        dimensions.append(temp) # append values from row
+                    except:
+                        for l in SDDReport.splitBoth(str(row), type(0.0), secondSplit=' '): # split values into floats
+                            temp += l # extend temp list with values from row
+                        dimensions.append(temp) # append values from row
                 else:
-                    temp = SDDReport.splitCommas(str(row), type(0.0)) # split values into floats
+                    try:
+                        temp = SDDReport.splitAny(str(row), type(0.0), ",") # split values into floats
+                    except:
+                        temp = SDDReport.splitAny(str(row), type(0.0), " ") # split values into floats
                     dimensions.append(temp) # append values from row
             length = len(dimensions[0]) # determine the number of columns (center, max, min)
             dimensions = pd.DataFrame(np.array(dimensions), columns=SDDReport.dimensionsHeaders[0:length]) # assign appropriate parsed column headers
@@ -197,7 +147,10 @@ class SDDReport:
         try:
             chromosomeInfo = [] # instantiating chromosomeInfo list
             for row2 in self.extractCol("chromosomeid"): # iterating through rows of the chromosomeID columns
-                chromosomeInfo.append(SDDReport.splitCommas(str(row2), type(0))) # split values into ints
+                try:
+                    chromosomeInfo.append(SDDReport.splitAny(str(row2), type(0), ",")) # split values into ints
+                except:
+                    chromosomeInfo.append(SDDReport.splitAny(str(row2), type(0), " ")) # split values into ints
             chromosomeInfo = pd.DataFrame(np.array(chromosomeInfo), columns=SDDReport.chromosomeInfoHeaders) # assign appropriate parsed column headers
         except:
             print("There is no chromosome information column in this file. Skipping...")
@@ -272,13 +225,19 @@ class SDDReport:
             if len(list(breakSpecs.columns)) == 0:
                 damageInfo = [] # instantiating damageInfo list
                 for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
-                    damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
+                    try:
+                        damageInfo.append(SDDReport.splitAny(str(row3), type(0), ",")) # split values into ints
+                    except:
+                        damageInfo.append(SDDReport.splitAny(str(row3), type(0), " ")) # split values into ints
                 length = len(damageInfo[0])
                 damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
             else:
                 damageInfo = [] # instantiating damageInfo list
                 for row3 in self.extractCol("damage"): # iterating through rows of the damageInfo columns
-                    damageInfo.append(SDDReport.splitCommas(str(row3), type(0))) # split values into ints
+                    try:
+                        damageInfo.append(SDDReport.splitAny(str(row3), type(0), ",")) # split values into ints
+                    except:
+                        damageInfo.append(SDDReport.splitAny(str(row3), type(0), " ")) # split values into ints
                 length = len(damageInfo[0])
                 damageInfo = pd.DataFrame(np.array(damageInfo), columns=SDDReport.damageInfoHeaders[0:length]) # assign appropriate parsed column headers
                 damageInfo = pd.DataFrame(damageInfo["dsbPresent"])
@@ -291,7 +250,10 @@ class SDDReport:
         try:
             cause = [] # instantiating cause list
             for row4 in self.extractCol("cause"): # iterating through rows of then cause columns
-                cause.append(SDDReport.splitCommas(str(row4), type(0))) # split values into ints
+                try:
+                    cause.append(SDDReport.splitAny(str(row4), type(0), ",")) # split values into ints
+                except:
+                    cause.append(SDDReport.splitAny(str(row4), type(0), " ")) # split values into ints
             length = len(cause[0])
             cause = pd.DataFrame(np.array(cause), columns=SDDReport.causeHeaders[0:length]) # assign appropriate parsed column headers
             if "identifier" in list(breakSpecs.columns) and "identifier" in list(cause.columns):
