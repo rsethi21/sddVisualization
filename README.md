@@ -96,6 +96,5 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 
 ## What are next steps?
 
-- make the labelling and filtering available for all columns types (challenging in the sense that SDD files have many fields as optional and so much complex logic required)
-    - lesion time is present but need an SDD example that has this field present
-- clean up code
+- make the labelling and filtering available for all columns types
+- lesion time is present but need an SDD example that has this field present
