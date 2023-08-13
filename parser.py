@@ -84,6 +84,7 @@ class SDDReport:
                 newLines.append(line)
                 tempfile.write(line)
 
+        # add try except for space delimitation
         for i, line in enumerate(newLines): # iterating through list
             if "EndOfHeader" in line: # looking for end of header marker to determine where data rows begin
                 skiprow = i+1 # assigning the index were data starts
@@ -273,6 +274,8 @@ class SDDReport:
             print("There is no cause information column in this file. Skipping...")
             cause = pd.DataFrame()
 
+        # add lesion time parsing
+        
         return dimensions, chromosomeInfo, damageInfo, cause, breakSpecs
 
     def saveParsed(self, df1: pd.DataFrame, *dfs: pd.DataFrame, path: str = None):
