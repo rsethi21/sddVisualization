@@ -200,14 +200,14 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i]), label = l) # plot point with label, its own unique color, and size
           left.remove(l) # remove from index to not reuse and create a large legend (weird workaround pyplot)
         else: # if direct and indirect not in dataframe
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2, label = l) # cannot change size of points
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1, label = l) # cannot change size of points
           left.remove(l) # remove since first time using this label in legend
       
       else: # if label not in index list for unique values
         if "totalDamages" in df.columns and size:# if direct and indirect (changing size of damage on plot since basically the number of damages)
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
-          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=2) # size not modulated by number of damages in the center damage point
+          ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
     
     graphNucleus(ax, volumes)
 
@@ -226,7 +226,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
       ax.plot3D(x, y, z, marker=".", color='k', markersize=(df["totalDamages"][i])) # graph with size modulation and no labels
   else: # if no direct/indirect
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
-      ax.plot3D(x, y, z, marker=".", markersize=2, color='k') # same size for all points
+      ax.plot3D(x, y, z, marker=".", markersize=1, color='k') # same size for all points
   
   graphNucleus(ax, volumes)
 

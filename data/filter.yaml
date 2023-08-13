@@ -77,6 +77,6 @@ singleNumber:
 # the include field is whether to graph data with those values in the column
 dsbPresent:
   # single backbone and/or base only
-  0: True
+  0: False
   # DSBs
   1: True

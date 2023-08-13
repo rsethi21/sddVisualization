@@ -26,10 +26,10 @@ chromsomeNumber: # Chromosome Number in Nucleus
 identifier: # Reason for Damage 
   labelby: True
   labels:
-    0: physical
-    1: chemical
-    2: chemical and physical
-    3: charge migration
+    0: no damage
+    1: physical
+    2: chemical
+    3: chemical and physical
   outfile: damage_identifier.png
 
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)

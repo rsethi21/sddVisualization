@@ -158,10 +158,12 @@ class SDDReport:
 
         try:
             breakSpecs = [] # instantiating damageInfo list
-            indirect = 0
-            direct = 0
-            indirectNDirect = 0
             for row5 in self.extractCol("breakspec"): # iterating through rows of the damageInfo columns
+                indirect = 0
+                direct = 0
+                indirectNDirect = 0
+                present = -1
+
                 try:
                     temp = SDDReport.splitBoth(str(row5), type(0), secondSplit=' ') # split values into ints
                 except:
@@ -186,16 +188,15 @@ class SDDReport:
                         indirectNDirect += 1
                 elif 1 in tempDF["identifier"].unique() and 2 in tempDF["identifier"].unique():
                     identifier = 3
-                    direct += len(tempDF["identifier"] == 1)
-                    indirect += len(tempDF["identifier"] == 2)
-                    indirectNDirect += len(tempDF["identifier"] == 3)
+                    direct += len(tempDF[tempDF["identifier"] == 1])
+                    indirect += len(tempDF[tempDF["identifier"] == 2])
+                    indirectNDirect += len(tempDF[tempDF["identifier"] == 3])
                 else:
                     identifier = max(tempDF["identifier"].unique())
-                    direct += len(tempDF["identifier"] == 1)
-                    indirect += len(tempDF["identifier"] == 2)
-                    indirectNDirect += len(tempDF["identifier"] == 3)
+                    direct += len(tempDF[tempDF["identifier"] == 1])
+                    indirect += len(tempDF[tempDF["identifier"] == 2])
+                    indirectNDirect += len(tempDF[tempDF["identifier"] == 3])
 
-                present = -1
                 if damagerow != None and int(damagerow[1]) == 0:
                     bps = float(damagerow[2])
                     strand1 = list(tempDF[(tempDF["strand"] == 1) & (tempDF["identifier"] != 0)]["base"])
@@ -204,12 +205,13 @@ class SDDReport:
                     for base in strand1:
                         differences = np.array(strand4) - base
                         distances.extend(differences)
-                    if len(distances) == 0:
-                        distances.append(bps+1)
-                    if min(distances) <= bps:
-                        present = 1
-                    else:
-                        present = 0
+
+                    if len(distances) != 0:
+                        if min(distances) <= bps:
+                            present = 1
+                        else:
+                            present = 0
+
                 else:
                     pass
 
@@ -255,7 +257,10 @@ class SDDReport:
                 except:
                     cause.append(SDDReport.splitAny(str(row4), type(0), " ")) # split values into ints
             length = len(cause[0])
-            cause = pd.DataFrame(np.array(cause), columns=SDDReport.causeHeaders[0:length]) # assign appropriate parsed column headers
+            if length == 1:
+                cause = pd.DataFrame(np.array(cause), columns=["cause"])
+            else:
+                cause = pd.DataFrame(np.array(cause), columns=SDDReport.causeHeaders[0:length]) # assign appropriate parsed column headers
             if "identifier" in list(breakSpecs.columns) and "identifier" in list(cause.columns):
                 cause.drop(columns=["identifier"], inplace = True)
             elif "identifier" not in list(breakSpecs.columns) and "identifier" in list(cause.columns):
