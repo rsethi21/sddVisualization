@@ -12,6 +12,7 @@ from parser import SDDReport
 from normalize import trainScaling, ScalePos
 from readYaml import readYaml
 import random
+import warnings
 
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object
@@ -190,6 +191,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   random.shuffle(colorlist) # shuffling to get better color selections in the beginning of the list
 
   for key in labelCoordinateList: # iterate through list of labels
+    print(f"Creating graph labelled by {key}...")
     fig = plt.figure() # create new fig object
     ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
     uniqueVals = list(df[key].unique()) # find unique values of the column
@@ -208,7 +210,6 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
-    
     graphNucleus(ax, volumes)
 
     plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
@@ -217,7 +218,9 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     except:
       fig.savefig(os.path.join(outputDir, f"damage_{key}.png")) # save figure based on labelled column
     plt.close(fig) # close to avoid overlaps
-    
+    print()
+
+  print("Creating unlabelled graph...")
   fig = plt.figure() # create new figure
   ax = fig.add_subplot(111, projection="3d") # add 3D component
 
@@ -232,16 +235,20 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
 
   fig.savefig(os.path.join(outputDir, f"damage.png")) # save basic image
   plt.close(fig) # close to avoid overlaps
-  
+  print()
   
 
 if __name__ == '__main__': # if script run directly
 
+  warnings.filterwarnings("ignore")
+
   args = parseIt.parse_args() # creating an args object to extract user input
 
+  print("Extracting SDD Information...")
   df, volumes = openSSD(args.input) # original unprocessed dataframe; remains untouched
   newdf, sx, sy, sz = scalePositionalData(df, int(args.width), int(args.length)) # scaling the positional data; return new dataframe object in memory
-  
+  print()
+
   nucleusAxes = []
   if len(volumes) > 7:
     nucleusAxes = [int(volumes[7]), sx.transform([[volumes[8]]]).item(), sy.transform([[volumes[9]]]).item(), sz.transform([[volumes[10]]]).item(), sx.transform([[volumes[11]]]).item(), sy.transform([[volumes[12]]]).item(), sz.transform([[volumes[13]]]).item()]
@@ -249,9 +256,14 @@ if __name__ == '__main__': # if script run directly
     nucleusAxes = [int(volumes[0]), sx.transform([[volumes[1]]]).item(), sy.transform([[volumes[2]]]).item(), sz.transform([[volumes[3]]]).item(), sx.transform([[volumes[4]]]).item(), sy.transform([[volumes[5]]]).item(), sz.transform([[volumes[6]]]).item()]
 
   if args.filter != None: # ensuring this is inputed, else basic plot
+    print("Filtering SDD...")
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
+    print()
   pb = [] # instantiating empty variable incase labels not applied
   outfiles = {}
+
   if args.coordinate != None: # ensuring this is inputed, else basic plot
+    print("Applying labels to SDD...")
     pb, outfiles, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
+    print()
   graph(newdf, pb, outfiles, args.save, nucleusAxes, args.size) # create and save plots
