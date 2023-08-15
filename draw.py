@@ -178,7 +178,7 @@ def graphNucleus(ax, volumes):
       y = ry * np.sin(v) * np.sin(u)
       z = rz * np.cos(v)
 
-      ax.plot_surface(x, y, z, alpha=0.20, color='m')
+      ax.plot_surface(x, y, z, alpha=0.10, color='m')
 
 def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list, size: bool):
   '''
@@ -196,6 +196,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
     uniqueVals = list(df[key].unique()) # find unique values of the column
     left = uniqueVals.copy() # copy a index tracker for which labels used
+    graphNucleus(ax, volumes)
     for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
       if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
         if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
@@ -210,7 +211,6 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
-    graphNucleus(ax, volumes)
 
     plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
     try:
@@ -223,7 +223,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
   print("Creating unlabelled graph...")
   fig = plt.figure() # create new figure
   ax = fig.add_subplot(111, projection="3d") # add 3D component
-
+  graphNucleus(ax, volumes)
   if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", color='k', markersize=(df["totalDamages"][i])) # graph with size modulation and no labels
