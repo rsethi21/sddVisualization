@@ -128,7 +128,7 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 ### Example for runVideo.py
 
 Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
-```python3 runVideo.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . -p 1 --size```
+```python3 runVideo.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . -p 1 -t 60 --size```
 
 ## What are filter/label.yaml files?
 
