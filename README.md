@@ -85,6 +85,7 @@ pip3 install -r requirements.txt
     - one unlabelled, unfiltered centers of DNA damage
     - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
     - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
+- saves images to the desired directory specified under the save argument; if none supplied uses current directory, if does not exist it will be created, if not empty it will warn you and ask you to clear the folder
 
 ### Example for runImage.py
 
@@ -93,7 +94,7 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 
 ### Inputs for runVideo.py
 
-```python3 runVideo.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [-p WORKERS] [--size | --no-size]```
+```python3 runVideo.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [-p WORKERS] [-t FPS] [--size | --no-size]```
 ```
 - options:
   -h, --help            show this help message and exit
@@ -107,8 +108,12 @@ Make sure you are in the sddVisualization folder in order to run the script (you
                         yaml file with filter configurations
   -c COORDINATE, --coordinate COORDINATE
                         yaml file with labelling configurations
-  -s SAVE, --save SAVE  output folder path
-  -p WORKERS, --workers  processing needed to create the frames for video
+  -s SAVE, --save SAVE
+                        output folder path
+  -p WORKERS, --workers
+                        processing needed to create the frames for video
+  -t FPS, --fps
+                        frames per second for video speed; max is 60 will automatically default to this if greater than this
   --size  whether to modulate size of points by number of confirmed damages
 ```
 ### Outputs for runVideo.py
@@ -117,7 +122,8 @@ Make sure you are in the sddVisualization folder in order to run the script (you
     - one unlabelled, unfiltered centers of DNA damage
     - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
     - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
-- videos for each of the labels desired and unlabeled damages as well
+- saves images of frames and videos to the desired directory specified under the save argument; if none supplied uses current directory, if does not exist it will be created, if not empty it will warn you and ask you to clear the folder
+    - within the directory folders are created with the associated label name where the frames are saved and a separate videos folder with the frames put together as a video for each label
 
 ### Example for runVideo.py
 
