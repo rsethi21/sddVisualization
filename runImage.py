@@ -1,6 +1,7 @@
 import warnings
 import argparse
 import draw
+import os
 
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object
@@ -18,6 +19,14 @@ if __name__ == '__main__': # if script run directly
   warnings.filterwarnings("ignore")
 
   args = parseIt.parse_args() # creating an args object to extract user input
+
+  if not os.path.isdir(args.save):
+      os.mkdir(args.save)
+  else:
+      if len(os.listdir(args.save)) == 0:
+        pass
+      else:
+        raise ValueError("Please empty desired output directory")
 
   start = "\033[1;3m"
   end = "\033[0m"
