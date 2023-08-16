@@ -20,6 +20,7 @@ parseIt.add_argument('-f', '--filter', help='yaml file with filter configuration
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None) # coordinate.yaml to help plot the data with color coordination
 parseIt.add_argument('-s', '--save', help='output folder path', required=False, default='.') # output folder path for png files
 parseIt.add_argument('-p', '--workers', help='number of processes to use', required=False, default=1) # output folder path for png files
+parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 
 def graph(df: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int):
@@ -135,4 +136,4 @@ if __name__ == "__main__":
     folders.append(f"./{args.save}/unlabeled")
     os.mkdir(os.path.join(args.save, "videos"))
     for f in tqdm(folders):
-       createVideo(f, os.path.join(args.save, "videos"), f"{f}.avi")
+       createVideo(f, os.path.join(args.save, "videos"), f"{f}.avi", int(args.fps))
