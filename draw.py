@@ -78,7 +78,7 @@ def filter(df: pd.DataFrame, filterFilePath: str):
       for i in newDict[key].keys(): # iterate each unique entry in the column of interest
         if newDict[key][i]: # check is user desires this entry
           filters.append(i) # if so, add to filter as one to keep
-    elif key == "direct" or key == "indirect" or key == "numBases" or key == "singleNumber": # these keys/columns are of another specific format in the yaml
+    elif key == "direct" or key == "indirect" or key == "numBases" or key == "singleNumber" or key == "totalDamages": # these keys/columns are of another specific format in the yaml
       # the set of if else statements below are checks to ensure user requests are valid
       if newDict[key]['less'] == None and newDict[key]['greater'] == None and newDict[key]['equal'] == None: # checking if any are none, if so skip this condition
         pass

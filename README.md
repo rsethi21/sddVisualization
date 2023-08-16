@@ -91,6 +91,39 @@ pip3 install -r requirements.txt
 Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
 ```python3 runImage.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . --size```
 
+### Inputs for runVideo.py
+
+```python3 runVideo.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [-p WORKERS] [--size | --no-size]```
+```
+- options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        path to ssd file
+  -w WIDTH, --width WIDTH
+                        width of output image
+  -l LENGTH, --length LENGTH
+                        length of output image
+  -f FILTER, --filter FILTER
+                        yaml file with filter configurations
+  -c COORDINATE, --coordinate COORDINATE
+                        yaml file with labelling configurations
+  -s SAVE, --save SAVE  output folder path
+  -p WORKERS, --workers  processing needed to create the frames for video
+  --size  whether to modulate size of points by number of confirmed damages
+```
+### Outputs for runVideo.py
+
+- points representing center of damage extent
+    - one unlabelled, unfiltered centers of DNA damage
+    - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
+    - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
+- videos for each of the labels desired and unlabeled damages as well
+
+### Example for runVideo.py
+
+Make sure you are in the sddVisualization folder in order to run the script (you must have your own test data)
+```python3 runVideo.py -i ./data/completeSDDExample.csv -w 10 -l 10 -f ./data/filter.yaml -c ./data/label.yaml -s . -p 1 --size```
+
 ## What are filter/label.yaml files?
 
 - These are extra user adjustable configuration files to filter and label the data as desired
@@ -99,5 +132,4 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 ## What are next steps?
 
 - make the filtering available for totalDamages
-- integrate lesion time and a pipeline for video creation
 - apply test/end cases for the tool
