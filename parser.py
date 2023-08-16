@@ -1,6 +1,7 @@
 # imports
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 import csv
 import os
 from itertools import compress
@@ -275,8 +276,18 @@ class SDDReport:
             cause = pd.DataFrame()
 
         # add lesion time parsing
-        
-        return dimensions, chromosomeInfo, damageInfo, cause, breakSpecs
+        try:
+            times = []
+            for row6 in self.extractCol("lesiontime"):
+                times.append(float(float(row6)))
+            scaler = MinMaxScaler(feature_range=(1, 1200))
+            times = scaler.fit_transform(pd.DataFrame(np.array(times), columns=["lesiontimes"]))
+            times = pd.DataFrame(times, columns=["lesiontimes"])
+        except:
+            print("There is no cause information column in this file. Skipping...")
+            times = pd.DataFrame()
+
+        return dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times
 
     def saveParsed(self, df1: pd.DataFrame, *dfs: pd.DataFrame, path: str = None):
         '''

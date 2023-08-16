@@ -32,8 +32,8 @@ def openSSD(pathSSD: str, outpath: str = None):
   The goal of this function is use the SDDReport object to save the parsed SDD.
   '''
   sdd = SDDReport(pathSSD) # create SDD object
-  dimensions, chromosomeInfo, damageInfo, cause, breakSpecs = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
-  parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, path=outpath) # create a dataframe with parsed SDD data for visualization
+  dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
+  parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times, path=outpath) # create a dataframe with parsed SDD data for visualization
 
   return parsedSdd, sdd.volumes
 
@@ -148,11 +148,9 @@ def label(df: pd.DataFrame, labelFilePath: str):
       print(f"Cannot label by values in column {col} because it is not in the provided sdd.") # if not in the dataframe then skip
 
   plotBy = [] # instantiate a list to store which columns to color coordinate by
-  outfiles = {}
   for key in list(newDict.keys()): # iterate through each key in the color coordination dictionary
     if newDict[key]['labelby']: # check if user wants to coordinate by this key
       plotBy.append(key) # add the key to the list
-      outfiles[key] = newDict[key]['outfile']
       for i in df.index: # iterate through each row in the dataframe
         # try except in case user does not include labels
         try:
@@ -160,7 +158,7 @@ def label(df: pd.DataFrame, labelFilePath: str):
         except:
           pass
 
-  return plotBy, outfiles, df
+  return plotBy, df
 
 def graphNucleus(ax, volumes):
 
@@ -180,7 +178,7 @@ def graphNucleus(ax, volumes):
 
       ax.plot_surface(x, y, z, alpha=0.10, color='m')
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir: str, volumes: list, size: bool):
+def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: list, size: bool):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -213,10 +211,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
 
     plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
-    try:
-      fig.savefig(os.path.join(outputDir, outfiles[key])) # save figure based on labelled column
-    except:
-      fig.savefig(os.path.join(outputDir, f"damage_{key}.png")) # save figure based on labelled column
+    fig.savefig(os.path.join(outputDir, f"damage_{key}.png"))
     plt.close(fig) # close to avoid overlaps
     print()
 
@@ -231,8 +226,6 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outfiles: dict, outputDir
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=1, color='k') # same size for all points
   
-  graphNucleus(ax, volumes)
-
   fig.savefig(os.path.join(outputDir, f"damage.png")) # save basic image
   plt.close(fig) # close to avoid overlaps
   print()
@@ -244,7 +237,9 @@ if __name__ == '__main__': # if script run directly
 
   args = parseIt.parse_args() # creating an args object to extract user input
 
-  print("Extracting SDD Information...")
+  start = "\033[1;3m"
+  end = "\033[0m"
+  print(start + "Extracting SDD Information..." + end)
   df, volumes = openSSD(args.input) # original unprocessed dataframe; remains untouched
   newdf, sx, sy, sz = scalePositionalData(df, int(args.width), int(args.length)) # scaling the positional data; return new dataframe object in memory
   print()
@@ -256,14 +251,14 @@ if __name__ == '__main__': # if script run directly
     nucleusAxes = [int(volumes[0]), sx.transform([[volumes[1]]]).item(), sy.transform([[volumes[2]]]).item(), sz.transform([[volumes[3]]]).item(), sx.transform([[volumes[4]]]).item(), sy.transform([[volumes[5]]]).item(), sz.transform([[volumes[6]]]).item()]
 
   if args.filter != None: # ensuring this is inputed, else basic plot
-    print("Filtering SDD...")
+    print(start + "Filtering SDD..." + end)
     newdf = filter(newdf, args.filter) # applies filter to new dataframe object in memory
     print()
   pb = [] # instantiating empty variable incase labels not applied
   outfiles = {}
 
   if args.coordinate != None: # ensuring this is inputed, else basic plot
-    print("Applying labels to SDD...")
-    pb, outfiles, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
-    print()
-  graph(newdf, pb, outfiles, args.save, nucleusAxes, args.size) # create and save plots
+    print(start + "Applying labels to SDD..." + end)
+    pb, newdf = label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
+  graph(newdf, pb, args.save, nucleusAxes, args.size) # create and save plots
+  print(start + "Graphing Successful!" + end)
