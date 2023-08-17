@@ -23,20 +23,19 @@ parseIt.add_argument('-p', '--workers', help='number of processes to use', requi
 parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int):
+def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
   
   The goal of this function is to plot the graph with points/lines of damage and labelled/filtered as desired by the user. The png files will be labelled by filtration criteria and a basic one without labels
   '''
-  colorlist = list(mcolors.CSS4_COLORS) # various matplotlib colors
-  random.shuffle(colorlist) # shuffling to get better color selections in the beginning of the list
+  colorlist = sorted(list(mcolors.CSS4_COLORS)) # various matplotlib colors
 
   for key, f in zip(labelCoordinateList, outputDirs): # iterate through list of labels
     fig = plt.figure() # create new fig object
     ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
-    uniqueVals = list(df[key].unique()) # find unique values of the column
+    uniqueVals = list(unfilteredDF[key].unique()) # find unique values of the column
     left = uniqueVals.copy() # copy a index tracker for which labels used
     draw.graphNucleus(ax, volumes)
     for x, y, z, l, i in zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index): # iterate through centers, labelled column and index in dataframe
@@ -75,7 +74,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOu
 def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool):
    
    tempDF = df[df["lesiontimes"] <= int(i)]
-   graph(tempDF, pb, folders, outFold, nucleusAxes, sizeBool, int(i)) # create and save plots
+   graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i)) # create and save plots
    print(f"Completed {int(100 * (i/1200))}% of Frames", end="\r") # 1200
 
 if __name__ == "__main__":
