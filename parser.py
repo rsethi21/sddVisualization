@@ -281,8 +281,9 @@ class SDDReport:
             for row6 in self.extractCol("lesiontime"):
                 times.append(float(float(row6)))
             scaler = MinMaxScaler(feature_range=(1, 1200))
-            times = scaler.fit_transform(pd.DataFrame(np.array(times), columns=["lesiontimes"]))
-            times = pd.DataFrame(times, columns=["lesiontimes"])
+            scaledtimes = scaler.fit_transform(pd.DataFrame(np.array(times), columns=["lesiontimes"]))
+            times = pd.DataFrame(scaledtimes, columns=["lesiontimes"])
+            self.timescaler = scaler
         except:
             print("There is no cause information column in this file. Skipping...")
             times = pd.DataFrame()

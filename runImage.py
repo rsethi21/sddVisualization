@@ -31,7 +31,7 @@ if __name__ == '__main__': # if script run directly
   start = "\033[1;3m"
   end = "\033[0m"
   print(start + "Extracting SDD Information..." + end)
-  df, volumes = draw.openSSD(args.input) # original unprocessed dataframe; remains untouched
+  df, volumes, obj = draw.openSSD(args.input) # original unprocessed dataframe; remains untouched
   newdf, sx, sy, sz = draw.scalePositionalData(df, int(args.width), int(args.length)) # scaling the positional data; return new dataframe object in memory
   print()
 

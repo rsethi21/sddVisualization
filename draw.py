@@ -24,7 +24,7 @@ def openSSD(pathSSD: str, outpath: str = None):
   dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
   parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times, path=outpath) # create a dataframe with parsed SDD data for visualization
 
-  return parsedSdd, sdd.volumes
+  return parsedSdd, sdd.volumes, sdd
 
 def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
   '''
@@ -198,7 +198,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
 
-    plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
+    plt.legend(loc="upper right", ncol = 6, fontsize = "xx-small") # apply legend
     fig.savefig(os.path.join(outputDir, f"damage_{key}.png"))
     plt.close(fig) # close to avoid overlaps
     print()

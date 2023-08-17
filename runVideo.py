@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import matplotlib.colors as mcolors
 import random
+import numpy as np
 from concurrent.futures import ProcessPoolExecutor as ppe
 from itertools import repeat
 from createVideo import createVideo
@@ -23,7 +24,7 @@ parseIt.add_argument('-p', '--workers', help='number of processes to use', requi
 parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 
-def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int):
+def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int, timescaler):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -53,7 +54,8 @@ def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: lis
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
 
-    plt.legend(loc="upper right", ncol = 5, fontsize = "xx-small") # apply legend
+    plt.legend(loc="upper right", ncol = 6, fontsize = "xx-small") # apply legend
+    fig.suptitle(f"Frame {ind}: {timescaler.inverse_transform(np.array([[ind]]))[0][0]} ns into the Simulation")
     fig.savefig(os.path.join(f, f"damage_{key}_{ind}.png")) # save figure based on labelled column
     plt.close(fig) # close to avoid overlaps
 
@@ -67,14 +69,15 @@ def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: lis
     for x, y, z, i in zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=1, color='k') # same size for all points
 
+  fig.suptitle(f"Frame {ind}: {timescaler.inverse_transform(np.array([[ind]]))[0][0]} ns into the Simulation")
   fig.savefig(os.path.join(basicOutputDir, f"damage_{ind}.png")) # save basic image
 
   plt.close(fig) # close to avoid overlaps
 
-def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool):
+def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool, timescaler):
    
    tempDF = df[df["lesiontimes"] <= int(i)]
-   graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i)) # create and save plots
+   graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i), timescaler) # create and save plots
    print(f"Completed {int(100 * (i/1200))}% of Frames", end="\r") # 1200
 
 if __name__ == "__main__":
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     start = "\033[1;3m"
     end = "\033[0m"
     print(start + "Extracting SDD Information..." + end)
-    df, volumes = draw.openSSD(args.input) # original unprocessed dataframe; remains untouched
+    df, volumes, sdd = draw.openSSD(args.input) # original unprocessed dataframe; remains untouched
     
     if "lesionTimes" not in df.columns:
        pass
@@ -127,8 +130,8 @@ if __name__ == "__main__":
     os.mkdir(f"./{args.save}/unlabeled")
 
     with ppe(max_workers=int(args.workers)) as executor:
-        indices = [i for i in range(1, 1201)]
-        results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size))
+        indices = [i for i in range(1, 1201)] # 1201
+        results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler))
 
     print()
     print(start + "Creating videos from frames" + end)
