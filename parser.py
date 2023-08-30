@@ -107,7 +107,7 @@ class SDDReport:
             columns = list(compress(cls.originalColumnHeaders, columnrow)) # applying boolean list to default column headers
             df.columns = columns # setting default column headers
 
-        os.remove("./temp.csv")
+        # os.remove("./temp.csv")
 
         return df, volumerow, damage
     
