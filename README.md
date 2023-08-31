@@ -137,5 +137,3 @@ Make sure you are in the sddVisualization folder in order to run the script (you
 - Information about each field of the yaml file commented within the file
 
 ## What are next steps?
-- apply test/end cases for the tool
-- interface medras code for repair times
