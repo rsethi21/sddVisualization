@@ -125,6 +125,7 @@ Make sure you are in the sddVisualization folder in order to run the script (you
     - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
 - saves images of frames and videos to the desired directory specified under the save argument; if none supplied uses current directory, if does not exist it will be created, if not empty it will warn you and ask you to clear the folder
     - within the directory folders are created with the associated label name where the frames are saved and a separate videos folder with the frames put together as a video for each label
+- temp.csv is created and can be ignored (helper file that helps the parser)
 
 ### Example for runVideo.py
 
