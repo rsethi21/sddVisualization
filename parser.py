@@ -108,7 +108,7 @@ class SDDReport:
             df.columns = columns # setting default column headers
 
         # os.remove("./temp.csv")
-
+        
         return df, volumerow, damage
     
     def extractCol(self, colName: str):
@@ -308,6 +308,6 @@ class SDDReport:
 
         self.parsedDf = finaldf # set parsedDF as an value of the object
         if path != None: # if path is None then does not save to a file otherwise saves to path
-            finaldf.to_csv(path) # saves to path
+            finaldf.to_csv(os.path.join(path, 'parsedSDD.csv')) # saves to path
 
         return finaldf

@@ -85,10 +85,20 @@ if __name__ == "__main__":
 
     args = parseIt.parse_args() # creating an args object to extract user input
 
+
+    if not os.path.isdir(args.save):
+       os.mkdir(args.save)
+    else:
+       if len(list(os.listdir(args.save))) == 0:
+          pass
+       else:
+          raise ValueError("Please empty output directory")
+
+
     start = "\033[1;3m"
     end = "\033[0m"
     print(start + "Extracting SDD Information..." + end)
-    df, volumes, sdd = draw.openSSD(args.input) # original unprocessed dataframe; remains untouched
+    df, volumes, sdd = draw.openSSD(args.input, outpath = args.save) # original unprocessed dataframe; remains untouched
     
     if "lesionTimes" not in df.columns:
        pass
@@ -114,13 +124,6 @@ if __name__ == "__main__":
         print(start + "Plotting against each frame..." + end)
         pb, newdf = draw.label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
     
-    if not os.path.isdir(args.save):
-       os.mkdir(args.save)
-    else:
-       if len(list(os.listdir(args.save))) == 0:
-          pass
-       else:
-          raise ValueError("Please empty output directory")
 
     folders = []
     for f in pb:
