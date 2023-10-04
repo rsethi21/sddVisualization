@@ -311,3 +311,6 @@ class SDDReport:
             finaldf.to_csv(os.path.join(path, 'parsedSDD.csv')) # saves to path
 
         return finaldf
+
+    def convertToSDD(dataframe):
+        return

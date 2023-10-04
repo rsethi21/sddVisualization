@@ -55,6 +55,13 @@ def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
 
   return df, sx, sy, sz
 
+def scaleSizes(originaldf: pd.DataFrame, width: int, length: int):
+    df = originaldf.copy()
+    scale = min(width, length)
+    sizeScaler = MinMaxScaler(feature_range = (1, 5))
+    df['totalDamages'] = sizeScaler.fit_transform(pd.DataFrame(df['totalDamages']))
+    return df
+
 def filter(df: pd.DataFrame, filterFilePath: str):
   '''
   inputs: parsedSDD and file path to filtering configurations

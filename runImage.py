@@ -51,5 +51,9 @@ if __name__ == '__main__': # if script run directly
   if args.coordinate != None: # ensuring this is inputed, else basic plot
     print(start + "Applying labels to SDD..." + end)
     pb, newdf = draw.label(newdf, args.coordinate) # applies labels to the same dataframe in memory as filter
+  
+  if args.size:
+    newdf = draw.scaleSizes(newdf, int(args.width), int(args.length))
+
   draw.graph(newdf, pb, args.save, nucleusAxes, args.size) # create and save plots
   print(start + "Graphing Successful!" + end)
