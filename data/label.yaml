@@ -5,7 +5,7 @@
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # labelby is whether to label data by the specific field
 structure: # Form of DNA
-  labelby: False
+  labelby: True
   labels:
     0: unspecified
     1: heterochromatin
@@ -32,7 +32,7 @@ identifier: # Reason for Damage
 # the labels are what the integer values will be renamed too when graphed in the legend (blank means default)
 # include is whether to label data by the specific field
 dsbPresent: # DSB or Single/Base Damage
-  labelby: False
+  labelby: True
   labels:
     0: SSB and/or Base
     1: DSBs
