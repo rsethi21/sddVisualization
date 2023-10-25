@@ -87,12 +87,9 @@ if __name__ == "__main__":
 
 
     if not os.path.isdir(args.save):
-       os.mkdir(args.save)
+        os.mkdir(args.save)
     else:
-       if len(list(os.listdir(args.save))) == 0:
-          pass
-       else:
-          raise ValueError("Please empty output directory")
+        pass
 
 
     start = "\033[1;3m"

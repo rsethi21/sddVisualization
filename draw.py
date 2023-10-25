@@ -181,7 +181,8 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
   
   The goal of this function is to plot the graph with points/lines of damage and labelled/filtered as desired by the user. The png files will be labelled by filtration criteria and a basic one without labels
   '''
-  colorlist = sorted(list(mcolors.CSS4_COLORS)) # various matplotlib colors
+  colorlist = list(mcolors.CSS4_COLORS) # various matplotlib colors
+  np.random.shuffle(colorlist)
 
   for key in labelCoordinateList: # iterate through list of labels
     print(f"Creating graph labelled by {key}...")

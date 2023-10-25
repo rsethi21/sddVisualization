@@ -23,10 +23,7 @@ if __name__ == '__main__': # if script run directly
   if not os.path.isdir(args.save):
       os.mkdir(args.save)
   else:
-      if len(os.listdir(args.save)) == 0:
-        pass
-      else:
-        raise ValueError("Please empty desired output directory")
+      pass
 
   start = "\033[1;3m"
   end = "\033[0m"

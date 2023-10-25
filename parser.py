@@ -90,13 +90,13 @@ class SDDReport:
             if "EndOfHeader" in line: # looking for end of header marker to determine where data rows begin
                 skiprow = i+1 # assigning the index were data starts
             if "Data entries" in line: # looking for binary data list to determine which columns present
-                columnrow = line[line.index("Data entries, ")+len("Data entries, "):-2].split(",") # finding string list with binary info. and spliting into list of ints
+                columnrow = line[line.index("Data entries,")+len("Data entries,"):-2].split(",") # finding string list with binary info. and spliting into list of ints
                 columnrow = [True if int(item) == 1 else False for item in columnrow] # converting 1, 0s to booleans
             if "Volumes" in line:
-                volumerow = line[line.index("Volumes, ")+len("Volumes, "):-2].split(",")
+                volumerow = line[line.index("Volumes,")+len("Volumes,"):-2].split(",")
                 volumerow = [float(item) for item in volumerow]
             if "Damage definition" in line:
-                damage = line[line.index("Damage definition, ")+len("Damage definition, "):-2].split(",")
+                damage = line[line.index("Damage definition,")+len("Damage definition,"):-2].split(",")
                 damage = [str(item) for item in damage]
 
 
