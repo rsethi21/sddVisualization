@@ -27,7 +27,6 @@ class SDDReport:
     def __init__(self, sddPath: str):
         
         self.originalDF, self.volumes, self.damages = SDDReport.openNStore(sddPath)
-        print(self.originalDF.damage)
 
     @classmethod
     def splitAny(cls, val: str, typ: any, sep: str):

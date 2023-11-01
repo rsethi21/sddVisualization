@@ -57,7 +57,6 @@ def scalePositionalData(originaldf: pd.DataFrame, width: int, length: int):
 
 def scaleSizes(originaldf: pd.DataFrame, width: int, length: int):
     df = originaldf.copy()
-    scale = min(width, length)
     sizeScaler = MinMaxScaler(feature_range = (1, 5))
     df['totalDamages'] = sizeScaler.fit_transform(pd.DataFrame(df['totalDamages']))
     return df
@@ -173,6 +172,7 @@ def graphNucleus(ax, volumes):
       z = rz * np.cos(v)
 
       ax.plot_surface(x, y, z, alpha=0.10, color='m')
+  
 
 def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: list, size: bool, angle_tup: tuple = None):
   '''

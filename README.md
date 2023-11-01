@@ -87,7 +87,9 @@ pip3 install -r requirements.txt
 - points representing center of damage extent
     - one unlabelled, unfiltered centers of DNA damage
     - labelled and/or filtered centers of DNA damage plotted (multiple images if multiple columns selected for labelling by user)
-    - size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
+- Nucleus border is applied to the graph if the nucleus is an ellipsoid shape; cube and cylinder shaped nucleus simulations will not generate the border and instead just plot the points
+	- any points that fall outside the nucleus border would mean that the damage hit the cell and missed the nucleus. This is only if the nucleus and cell size are different in the simulation
+- size of centers based upon the total number of damages (direct/indirect) if this information is present, otherwise a single size for all damage; this represent the extent of damage
 - saves images to the desired directory specified under the save argument; if none supplied uses current directory, if does not exist it will be created, if not empty it will warn you and ask you to clear the folder
 - temp.csv is created and can be ignored (helper file that helps the parser)
 
