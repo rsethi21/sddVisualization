@@ -62,7 +62,7 @@ pip3 install -r requirements.txt
 
 ### Inputs for runImage.py
 
-```python3 runImage.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [--size | --no-size]```
+```python3 runImage.py [-h] -i INPUT [-w WIDTH] [-l LENGTH] [-f FILTER] [-c COORDINATE] [-s SAVE] [--size | --no-size] [--angle ANGLE1 ANGLE2]```
 ```
 - options:
   -h, --help            show this help message and exit
