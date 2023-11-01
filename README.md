@@ -77,7 +77,10 @@ pip3 install -r requirements.txt
   -c COORDINATE, --coordinate COORDINATE
                         yaml file with labelling configurations
   -s SAVE, --save SAVE  output folder path
-  --size  whether to modulate size of points by number of confirmed damages
+  --size
+        whether to modulate size of points by number of confirmed damages
+  --angle ANGLE ANGLE
+        two arguments to change the angle of the image
 ```
 ### Outputs for runImage.py
 
