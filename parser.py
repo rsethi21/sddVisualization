@@ -27,6 +27,7 @@ class SDDReport:
     def __init__(self, sddPath: str):
         
         self.originalDF, self.volumes, self.damages = SDDReport.openNStore(sddPath)
+        print(self.originalDF.damage)
 
     @classmethod
     def splitAny(cls, val: str, typ: any, sep: str):
@@ -203,22 +204,29 @@ class SDDReport:
                     bps = float(damagerow[2])
                     strand1 = list(tempDF[(tempDF["strand"] == 1) & (tempDF["identifier"] != 0)]["base"])
                     strand4 = list(tempDF[(tempDF["strand"] == 4) & (tempDF["identifier"] != 0)]["base"])
+                    strand2 = list(tempDF[(tempDF["strand"] == 2) & (tempDF["identifier"] != 0)]["base"])
+                    strand3 = list(tempDF[(tempDF["strand"] == 3) & (tempDF["identifier"] != 0)]["base"])
+                    strand1.extend(strand2)
+                    strand3.extend(strand4)
                     distances = []
+                    
                     for base in strand1:
-                        differences = np.array(strand4) - base
+                        differences = np.array(strand3) - base
                         distances.extend(differences)
-
+                    
                     if len(distances) != 0:
                         if min(distances) <= bps:
                             present = 1
                         else:
                             present = 0
-
+                    else:
+                        present = 0
                 else:
                     pass
 
                 breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect, present])
             breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect", "dsbPresent"])
+            print(breakSpecs.dsbPresent)
             if sum(breakSpecs["dsbPresent"] < 0):
                 breakSpecs.drop(columns=["dsbPresent"], inplace=True)
         except:
