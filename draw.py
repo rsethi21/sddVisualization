@@ -174,7 +174,7 @@ def graphNucleus(ax, volumes):
 
       ax.plot_surface(x, y, z, alpha=0.10, color='m')
 
-def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: list, size: bool):
+def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: list, size: bool, angle_tup: tuple = None):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -205,7 +205,8 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
-
+      if angle_tup != None:
+        ax.view_init(angle_tup[0], angle_tup[1])
     plt.legend(loc="upper right", ncol = 6, fontsize = "xx-small") # apply legend
     fig.savefig(os.path.join(outputDir, f"damage_{key}.png"))
     plt.close(fig) # close to avoid overlaps
@@ -221,7 +222,9 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
   else: # if no direct/indirect
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=1, color='k') # same size for all points
-  
+  if angle_tup != None:
+        ax.view_init(angle_tup[0], angle_tup[1])
+
   fig.savefig(os.path.join(outputDir, f"damage.png")) # save basic image
   plt.close(fig) # close to avoid overlaps
   print()

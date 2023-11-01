@@ -12,13 +12,15 @@ parseIt.add_argument('-f', '--filter', help='yaml file with filter configuration
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None) # coordinate.yaml to help plot the data with color coordination
 parseIt.add_argument('-s', '--save', help='output folder path', required=False, default='.') # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
-
+parseIt.add_argument('--angle', help='two arguments to change the angle of the image', required=False, nargs=2, type=int, default=None)
 
 if __name__ == '__main__': # if script run directly
 
   warnings.filterwarnings("ignore")
 
   args = parseIt.parse_args() # creating an args object to extract user input
+
+  print(args.angle)
 
   if not os.path.isdir(args.save):
       os.mkdir(args.save)
@@ -52,5 +54,5 @@ if __name__ == '__main__': # if script run directly
   if args.size:
     newdf = draw.scaleSizes(newdf, int(args.width), int(args.length))
 
-  draw.graph(newdf, pb, args.save, nucleusAxes, args.size) # create and save plots
+  draw.graph(newdf, pb, args.save, nucleusAxes, args.size, args.angle) # create and save plots
   print(start + "Graphing Successful!" + end)
