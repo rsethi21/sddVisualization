@@ -23,6 +23,7 @@ parseIt.add_argument('-s', '--save', help='output folder path', required=False, 
 parseIt.add_argument('-p', '--workers', help='number of processes to use', required=False, default=1) # output folder path for png files
 parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
+parseIt.add_argument('-n', "--frames", help="total number of frames to generate", type=int, required=False, default=1200)
 
 def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int, timescaler):
   '''
@@ -78,7 +79,7 @@ def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool, timescaler):
    
    tempDF = df[df["lesiontimes"] <= int(i)]
    graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i), timescaler) # create and save plots
-   print(f"Completed {int(100 * (i/1200))}% of Frames", end="\r") # 1200
+   print(f"Completed {int(100 * (i/args.frames))}% of Frames", end="\r") # 1200
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     os.mkdir(f"./{args.save}/unlabeled")
 
     with ppe(max_workers=int(args.workers)) as executor:
-        indices = [i for i in range(1, 1201)] # 1201
+        indices = [i for i in range(1, args.frames + 1)] # 1201
         results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler))
 
     print()
