@@ -114,7 +114,7 @@ class SDDReport:
     def extractCol(self, colName: str):
         return self.originalDF[colName]
 
-    def parseVizInfo(self, damagerow):
+    def parseVizInfo(self, damagerow, num_frames = 1200):
         '''
         inputs: none
         outputs: dataframes of dimensions, chromosomeInfo, damageInfo, cause
@@ -287,7 +287,7 @@ class SDDReport:
             times = []
             for row6 in self.extractCol("lesiontime"):
                 times.append(float(float(row6)))
-            scaler = MinMaxScaler(feature_range=(1, 1200))
+            scaler = MinMaxScaler(feature_range=(1, num_frames))
             scaledtimes = scaler.fit_transform(pd.DataFrame(np.array(times), columns=["lesiontimes"]))
             times = pd.DataFrame(scaledtimes, columns=["lesiontimes"])
             self.timescaler = scaler

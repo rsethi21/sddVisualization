@@ -13,7 +13,7 @@ from readYaml import readYaml
 import random
 
 
-def openSSD(pathSSD: str, outpath: str = None):
+def openSSD(pathSSD: str, outpath: str = None, num_frames: str = 1200):
   '''
   inputs: path to SDD, optional outpath to save parsed sdd file
   outputs: parsedSDD dataframe object
@@ -21,7 +21,7 @@ def openSSD(pathSSD: str, outpath: str = None):
   The goal of this function is use the SDDReport object to save the parsed SDD.
   '''
   sdd = SDDReport(pathSSD) # create SDD object
-  dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times = sdd.parseVizInfo(sdd.damages) # create parsed dataframes of important data
+  dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times = sdd.parseVizInfo(sdd.damages, num_frames) # create parsed dataframes of important data
   parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times, path=outpath) # create a dataframe with parsed SDD data for visualization
 
   return parsedSdd, sdd.volumes, sdd

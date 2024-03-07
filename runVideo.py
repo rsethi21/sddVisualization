@@ -96,7 +96,7 @@ if __name__ == "__main__":
     start = "\033[1;3m"
     end = "\033[0m"
     print(start + "Extracting SDD Information..." + end)
-    df, volumes, sdd = draw.openSSD(args.input, outpath = args.save) # original unprocessed dataframe; remains untouched
+    df, volumes, sdd = draw.openSSD(args.input, outpath = args.save, num_frames=args.frames) # original unprocessed dataframe; remains untouched
     
     if "lesionTimes" not in df.columns:
        pass
