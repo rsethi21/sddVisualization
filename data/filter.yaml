@@ -27,13 +27,13 @@ chromsomeNumber: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
 # the include field is whether to graph data with those values in the column
 identifier:
   # physical
-  0: False
+  0: True
   # chemical
-  1: False
+  1: True
   # direct and indirect
   2: True
   # charge migration
-  3: False
+  3: True
 
 # number of damages
 # less is keep any values less than the user specified integer (by default keeps all)
