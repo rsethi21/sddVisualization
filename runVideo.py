@@ -15,13 +15,13 @@ from createVideo import createVideo
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object
 parseIt.add_argument('-i', '--input', help='path to ssd file', required=True) # input path to sdd
-parseIt.add_argument('-w', '--width', help='width of output images', required=False, default=10) # width of frame defaults to 10
-parseIt.add_argument('-l', '--length', help='length of output images', required=False, default=10) # length of frame defaults to 10
+parseIt.add_argument('-w', '--width', help='width of output images', required=False, default=10, type=int) # width of frame defaults to 10
+parseIt.add_argument('-l', '--length', help='length of output images', required=False, default=10, type=int) # length of frame defaults to 10
 parseIt.add_argument('-f', '--filter', help='yaml file with filter configurations', required=False, default=None) # filter.yaml path to help filter the dataset
 parseIt.add_argument('-c', '--coordinate', help='yaml file with labelling configurations', required=False, default=None) # coordinate.yaml to help plot the data with color coordination
 parseIt.add_argument('-s', '--save', help='output folder path', required=False, default='.') # output folder path for png files
-parseIt.add_argument('-p', '--workers', help='number of processes to use', required=False, default=1) # output folder path for png files
-parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
+parseIt.add_argument('-p', '--workers', help='number of processes to use', required=False, type=int, default=1) # output folder path for png files
+parseIt.add_argument('-t', '--fps', help='frames per second for video speed', type=int, required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 parseIt.add_argument('-n', "--frames", help="total number of frames to generate", type=int, required=False, default=1200)
 parseIt.add_argument('--angle', help='two arguments to change the angle of the image', required=False, nargs=2, type=int, default=None)
@@ -95,6 +95,7 @@ if __name__ == "__main__":
     else:
         pass
 
+    assert(args.fps <= args.frames)
 
     start = "\033[1;3m"
     end = "\033[0m"
@@ -136,11 +137,12 @@ if __name__ == "__main__":
 
     with ppe(max_workers=int(args.workers)) as executor:
         indices = [i for i in range(1, args.frames + 1)] # 1201
-        results = list(tqdm(executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler), repeat(args.angle))))
+        results = list(tqdm(executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler), repeat(args.angle)), total=args.frames))
 
     print()
     print(start + "Creating videos from frames" + end)
     folders.append(f"./{args.save}/unlabeled")
-    os.mkdir(os.path.join(args.save, "videos"))
+    if "videos" not in os.listdir(args.save):
+        os.mkdir(os.path.join(args.save, "videos"))
     for f in tqdm(folders):
-       createVideo(f, os.path.join(args.save, "videos"), f"{f}.avi", int(args.fps))
+        createVideo(f, os.path.join(args.save, "videos"), f"{f}.avi", int(args.fps))
