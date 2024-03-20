@@ -83,7 +83,6 @@ def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool, timescaler, angles)
    
    tempDF = df[df["lesiontimes"] <= int(i)]
    graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i), timescaler, angles) # create and save plots
-   print(f"Completed {int(100 * (i/args.frames))}% of Frames", end="\r") # 1200
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
@@ -137,7 +136,7 @@ if __name__ == "__main__":
 
     with ppe(max_workers=int(args.workers)) as executor:
         indices = [i for i in range(1, args.frames + 1)] # 1201
-        results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler), repeat(args.angle))
+        results = list(tqdm(executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler), repeat(args.angle))))
 
     print()
     print(start + "Creating videos from frames" + end)
