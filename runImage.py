@@ -2,6 +2,7 @@ import warnings
 import argparse
 import draw
 import os
+import pdb
 
 # parser arguments to allow for customized drawing
 parseIt = argparse.ArgumentParser() # create argument parser object

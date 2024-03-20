@@ -24,8 +24,9 @@ parseIt.add_argument('-p', '--workers', help='number of processes to use', requi
 parseIt.add_argument('-t', '--fps', help='frames per second for video speed; max is 60 will automatically default to this if greater than this', required=False, default=60) # output folder path for png files
 parseIt.add_argument('--size', help='boolean flag to allow for size modulation of damage centroids', required=False, default=False, action=argparse.BooleanOptionalAction)
 parseIt.add_argument('-n', "--frames", help="total number of frames to generate", type=int, required=False, default=1200)
+parseIt.add_argument('--angle', help='two arguments to change the angle of the image', required=False, nargs=2, type=int, default=None)
 
-def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int, timescaler):
+def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: list, outputDirs: list, basicOutputDir: str, volumes: list, size: bool, ind: int, timescaler, angles_tup: tuple = None):
   '''
   inputs: dataframe to plot, list to color coordinate data by, output directory to store images, flag to override and plot points
   outputs: plots saved to output directory (labelled and unlablled)
@@ -54,7 +55,8 @@ def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: lis
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i])) # plot point without label since already applied but color will be unique to label
         else: # if no direct, indirect
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=1) # size not modulated by number of damages in the center damage point
-
+      if angles_tup != None:
+        ax.view_init(angles_tup[0], angles_tup[1])
     plt.legend(loc="upper right", ncol = 6, fontsize = "xx-small") # apply legend
     fig.suptitle(f"Frame {ind}: {timescaler.inverse_transform(np.array([[ind]]))[0][0]} ns into the Simulation")
     fig.savefig(os.path.join(f, f"damage_{key}_{ind}.png")) # save figure based on labelled column
@@ -69,16 +71,18 @@ def graph(df: pd.DataFrame, unfilteredDF: pd.DataFrame, labelCoordinateList: lis
   else: # if no direct/indirect
     for x, y, z, i in zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", markersize=1, color='k') # same size for all points
+  if angles_tup != None:
+    ax.view_init(angles_tup[0], angles_tup[1])
 
   fig.suptitle(f"Frame {ind}: {timescaler.inverse_transform(np.array([[ind]]))[0][0]} ns into the Simulation")
   fig.savefig(os.path.join(basicOutputDir, f"damage_{ind}.png")) # save basic image
 
   plt.close(fig) # close to avoid overlaps
 
-def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool, timescaler):
+def plot(df, i, pb, folders, outFold, nucleusAxes, sizeBool, timescaler, angles):
    
    tempDF = df[df["lesiontimes"] <= int(i)]
-   graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i), timescaler) # create and save plots
+   graph(tempDF, df, pb, folders, outFold, nucleusAxes, sizeBool, int(i), timescaler, angles) # create and save plots
    print(f"Completed {int(100 * (i/args.frames))}% of Frames", end="\r") # 1200
 
 if __name__ == "__main__":
@@ -128,11 +132,12 @@ if __name__ == "__main__":
         if f not in os.listdir(args.save):
             os.mkdir(f"./{args.save}/{f}")
         folders.append(f"./{args.save}/{f}")
-    os.mkdir(f"./{args.save}/unlabeled")
+    if "unlabeled" not in os.listdir(args.save):
+        os.mkdir(f"./{args.save}/unlabeled")
 
     with ppe(max_workers=int(args.workers)) as executor:
         indices = [i for i in range(1, args.frames + 1)] # 1201
-        results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler))
+        results = executor.map(plot, repeat(newdf), indices, repeat(pb), repeat(folders), repeat(f"./{args.save}/unlabeled"), repeat(nucleusAxes), repeat(args.size), repeat(sdd.timescaler), repeat(args.angle))
 
     print()
     print(start + "Creating videos from frames" + end)
