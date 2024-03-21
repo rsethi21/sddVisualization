@@ -26,7 +26,7 @@ class SDDReport:
 
     def __init__(self, sddPath: str):
         
-        self.originalDF, self.volumes, self.damages = SDDReport.openNStore(sddPath)
+        self.originalDF, self.volumes, self.damages, self.header = SDDReport.openNStore(sddPath, return_header=True)
 
     @classmethod
     def splitAny(cls, val: str, typ: any, sep: str):
@@ -63,7 +63,7 @@ class SDDReport:
         return vals
 
     @classmethod
-    def openNStore(cls, path: str):
+    def openNStore(cls, path: str, return_header=False):
         '''
         inputs: path for sdd
         outputs: opened DF
@@ -99,20 +99,84 @@ class SDDReport:
                 damage = line[line.index("Damage definition,")+len("Damage definition,"):-2].split(",")
                 damage = [str(item) for item in damage]
 
+        header_string = newLines[:skiprow]
 
         with open("./temp.csv", "r") as file2: # opening file again to read sdd
             df = pd.read_csv(file2, sep=";", header = None, skiprows = skiprow) # opening sdd as a DF with appropriate skipping
             df.dropna(axis=1, how="all", inplace=True) # remove columns with all NAs if any present (separator is a bit odd)
 
             columns = list(compress(cls.originalColumnHeaders, columnrow)) # applying boolean list to default column headers
-            df.columns = columns # setting default column headers
-
+            df.columns = columns # setting default column headers 
         # os.remove("./temp.csv")
         
-        return df, volumerow, damage
+        if return_header:
+            return df, volumerow, damage, header_string
+        else:
+            return df, volumerow, damage
     
     def extractCol(self, colName: str):
         return self.originalDF[colName]
+
+    def normalizeSDDFile(self, path, separator1="/", separator2=",", columnSeparator="; "):
+       
+        1, 6, 11, 12
+        indices = [SDDReport.originalColumnHeaders.index(c) for c in self.originalDF.columns]
+        types = [int, float, int, float, int, int, int, str, float, int, float, float, int, int]
+        separators = ["/", ",", " "]
+        rows = []
+        for row_index in list(range(len(self.originalDF.index))):
+            example_row = self.originalDF.iloc[0]
+            all_data = []
+            for i in range(len(indices)):
+                split_data = [example_row[i]]
+                done = False
+                index = 0
+                while not done or index > len(separators):
+                    try:
+                        float(split_data[0])
+                        split_data = [types[indices[i]](data) for data in split_data]
+                        done = True
+                    except:
+                        temp = []
+                        if separators[index] in "".join(split_data):
+                            for data in split_data:
+                                temp.extend(data.split(separators[index]))
+                            split_data = [value for value in temp if value not in ["", " "]]
+                        else:
+                            index += 1
+                all_data.append(split_data)
+            all_data_as_strings = []
+            for i, ad in enumerate(all_data):
+                if indices[i] in [1, 6, 11, 12]:
+                    if len(ad) > 3:
+                        string = ""
+                        for i_d in range(0, len(ad), 3):
+                            string = string + separator2.join(str(item) for item in ad[i_d:i_d+3])
+                            string = string + separator1
+                        all_data_as_strings.append(string)
+                    elif len(ad) > 1:
+                        all_data_as_strings.append(separator2.join(str(d) for d in ad))
+                    else:
+                        all_data_as_strings.append(str(ad[0]))
+                else:
+                    if len(ad) > 1:
+                        all_data_as_strings.append(separator2.join(str(d) for d in ad))
+                    else:
+                        all_data_as_strings.append(str(ad[0]))
+            row = f'{columnSeparator.join(all_data_as_strings)};'
+            rows.append(row)
+        with open(path, "w") as normalized_file:
+            for i1, header_line in enumerate(self.header):
+                if i1 == len(self.header) - 1:
+                    normalized_file.write(f"{header_line}\n")
+                else:
+                    normalized_file.write(header_line)
+            for i2, row in enumerate(rows):
+                if i2 == len(rows) - 1:
+                    normalized_file.write(row)
+                else:
+                    normalized_file.write(f"{row}\n")
+
 
     def parseVizInfo(self, damagerow, num_frames = 1200):
         '''
@@ -318,6 +382,3 @@ class SDDReport:
             finaldf.to_csv(os.path.join(path, 'parsedSDD.csv')) # saves to path
 
         return finaldf
-
-    def convertToSDD(dataframe):
-        return
