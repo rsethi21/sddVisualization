@@ -21,8 +21,6 @@ if __name__ == '__main__': # if script run directly
 
   args = parseIt.parse_args() # creating an args object to extract user input
 
-  print(args.angle)
-
   if not os.path.isdir(args.save):
       os.mkdir(args.save)
   else:
