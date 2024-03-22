@@ -289,7 +289,6 @@ class SDDReport:
 
                 breakSpecs.append([baseNumber, singleNumber, identifier, direct, indirect, indirectNDirect, present])
             breakSpecs = pd.DataFrame(np.array(breakSpecs), columns=["numBases", "singleNumber", "identifier", "direct", "indirect", "directNIndirect", "dsbPresent"])
-            print(breakSpecs.dsbPresent)
             if sum(breakSpecs["dsbPresent"] < 0):
                 breakSpecs.drop(columns=["dsbPresent"], inplace=True)
         except:

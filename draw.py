@@ -185,13 +185,13 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
   np.random.shuffle(colorlist)
 
   for key in labelCoordinateList: # iterate through list of labels
-    print(f"Creating graph labelled by {key}...")
+    print(f"Creating graph labeled by {key}...")
     fig = plt.figure() # create new fig object
     ax = fig.add_subplot(111, projection="3d") # create a 3D plot in figure
     uniqueVals = list(df[key].unique()) # find unique values of the column
     left = uniqueVals.copy() # copy a index tracker for which labels used
     graphNucleus(ax, volumes)
-    for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index)): # iterate through centers, labelled column and index in dataframe
+    for x, y, z, l, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df[key], df.index), total=len(df.index)): # iterate through centers, labelled column and index in dataframe
       if l in left: # if label still in index tracker (meaning no labelled values by this unique value)
         if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
           ax.plot3D(x, y, z, marker=".", color=colorlist[uniqueVals.index(l)], markersize=(df["totalDamages"][i]), label = l) # plot point with label, its own unique color, and size
@@ -217,7 +217,7 @@ def graph(df: pd.DataFrame, labelCoordinateList: list, outputDir: str, volumes: 
   ax = fig.add_subplot(111, projection="3d") # add 3D component
   graphNucleus(ax, volumes)
   if "totalDamages" in df.columns and size: # if direct and indirect (changing size of damage on plot since basically the number of damages)
-    for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
+    for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index), total=len(df.index)): # iterate through centers, labelled column and index in dataframe
       ax.plot3D(x, y, z, marker=".", color='k', markersize=(df["totalDamages"][i])) # graph with size modulation and no labels
   else: # if no direct/indirect
     for x, y, z, i in tqdm(zip(df['xcenter'], df['ycenter'], df['zcenter'], df.index)): # iterate through centers, labelled column and index in dataframe
