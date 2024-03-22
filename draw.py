@@ -21,6 +21,7 @@ def openSSD(pathSSD: str, outpath: str = None, num_frames: str = 1200):
   The goal of this function is use the SDDReport object to save the parsed SDD.
   '''
   sdd = SDDReport(pathSSD) # create SDD object
+  sdd.normalizeSDDFile(os.path.join(outpath, "normalizedSDD.sdd"))
   dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times = sdd.parseVizInfo(sdd.damages, num_frames) # create parsed dataframes of important data
   parsedSdd = sdd.saveParsed(dimensions, chromosomeInfo, damageInfo, cause, breakSpecs, times, path=outpath) # create a dataframe with parsed SDD data for visualization
 
